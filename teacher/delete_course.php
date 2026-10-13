@@ -1,16 +1,17 @@
 
 <?php
 require_once __DIR__ . "/../includes/auth.php";
+
 requireRole("teacher");
 
-// Chỉ chấp nhận yêu cầu POST
+// 1. Chỉ chấp nhận POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
     header("Allow: POST");
     exit("Phương thức không hợp lệ.");
 }
 
-// Kiểm tra CSRF token
+// 2. Kiểm tra CSRF
 $token = $_POST["csrf_token"] ?? "";
 
 if (
@@ -22,7 +23,7 @@ if (
     exit("Yêu cầu không hợp lệ.");
 }
 
-// Lấy ID khóa học
+// 3. Lấy ID khóa học
 $courseId = filter_input(
     INPUT_POST,
     "course_id",
@@ -34,27 +35,92 @@ if (!$courseId || $courseId < 1) {
     exit("ID khóa học không hợp lệ.");
 }
 
-// Lấy ID giảng viên từ Session
 $teacherId = (int)$_SESSION["user_id"];
 
-// Chỉ xóa bản nháp thuộc giảng viên đang đăng nhập
-$sql = "DELETE FROM courses
-        WHERE id = ?
-          AND teacher_id = ?
-          AND status = 'draft'";
+try {
+    // 4. Bắt đầu transaction
+    $pdo->beginTransaction();
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute([$courseId, $teacherId]);
-
-if ($stmt->rowCount() !== 1) {
-    http_response_code(409);
-    exit(
-        "Không thể xóa khóa học. " .
-        "Khóa học không thuộc quyền quản lý của bạn " .
-        "hoặc không ở trạng thái bản nháp."
+    // 5. Kiểm tra quyền và khóa bản ghi khóa học
+    $stmt = $pdo->prepare(
+        "SELECT id, status
+         FROM courses
+         WHERE id = ?
+           AND teacher_id = ?
+         FOR UPDATE"
     );
-}
 
-// Xóa thành công
-header("Location: courses.php?message=deleted");
-exit;
+    $stmt->execute([$courseId, $teacherId]);
+    $course = $stmt->fetch();
+
+    if (!$course) {
+        $pdo->rollBack();
+
+        http_response_code(404);
+        exit("Không tìm thấy khóa học của bạn.");
+    }
+
+    // Chỉ được xóa bản nháp
+    if ($course["status"] !== "draft") {
+        $pdo->rollBack();
+
+        http_response_code(409);
+        exit(
+            "Chỉ được xóa khóa học ở trạng thái bản nháp."
+        );
+    }
+
+    // 6. Kiểm tra khóa học còn bài học không
+    $countStmt = $pdo->prepare(
+        "SELECT COUNT(*)
+         FROM lessons
+         WHERE course_id = ?"
+    );
+
+    $countStmt->execute([$courseId]);
+    $lessonCount = (int)$countStmt->fetchColumn();
+
+    if ($lessonCount > 0) {
+        $pdo->rollBack();
+
+        http_response_code(409);
+        exit(
+            "Không thể xóa khóa học vì vẫn còn " .
+            $lessonCount . " bài học. " .
+            "Hãy xóa tài liệu và các bài học trước."
+        );
+    }
+
+    // 7. Khóa học không còn bài học -> được xóa
+    $delete = $pdo->prepare(
+        "DELETE FROM courses
+         WHERE id = ?
+           AND teacher_id = ?
+           AND status = 'draft'"
+    );
+
+    $delete->execute([$courseId, $teacherId]);
+
+    if ($delete->rowCount() !== 1) {
+        throw new RuntimeException(
+            "Không thể xóa khóa học."
+        );
+    }
+
+    // 8. Hoàn thành
+    $pdo->commit();
+
+    header("Location: courses.php?message=deleted");
+    exit;
+
+} catch (Throwable $e) {
+
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
+    error_log($e->getMessage());
+
+    http_response_code(500);
+    exit("Có lỗi khi xóa khóa học. Vui lòng thử lại.");
+}

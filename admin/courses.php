@@ -105,8 +105,17 @@ function e($value) {
                             ?? $course["status"]
                         ); ?></td>
 
-                        <td>
-                            <?php if ($course["status"] === "pending"): ?>
+                        
+<td>
+    <a
+        href="course_preview.php?course_id=<?php echo (int)$course['id']; ?>"
+        class="btn btn-primary"
+    >
+        Xem nội dung
+    </a>
+
+    <?php if ($course["status"] === "pending"): ?>
+
 
                                 <form
                                     action="review_course.php"

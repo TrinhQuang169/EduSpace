@@ -67,5 +67,31 @@ $name = htmlspecialchars(
         </p>
     </div>
 
+    
+<div style="margin: 25px 0;">
+
+    <h2>Chức năng học viên</h2>
+
+    <p>
+        <a
+            href="../student/courses.php"
+            class="btn btn-primary"
+        >
+            Danh sách khóa học
+        </a>
+    </p>
+
+    <p style="margin-top: 15px;">
+        <a
+            href="../student/my_courses.php"
+            class="btn btn-primary"
+        >
+            Khóa học của tôi
+        </a>
+    </p>
+
+</div>
+
+
 </body>
 </html>

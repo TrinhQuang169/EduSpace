@@ -3,6 +3,10 @@
 require_once __DIR__ . "/../includes/auth.php";
 requireRole("teacher");
 
+if (empty($_SESSION["csrf_token"])) {
+    $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
+}
+
 $courseId = filter_input(
     INPUT_GET,
     "course_id",
@@ -16,7 +20,7 @@ if (!$courseId || $courseId < 1) {
 
 $teacherId = (int)$_SESSION["user_id"];
 
-// Xác minh quyền sở hữu khóa học
+// Kiểm tra khóa học thuộc giảng viên
 $stmt = $pdo->prepare(
     "SELECT id, title, status
      FROM courses
@@ -32,7 +36,7 @@ if (!$course) {
     exit("Không tìm thấy khóa học của bạn.");
 }
 
-// Lấy bài học theo thứ tự
+// Lấy danh sách bài học
 $stmt = $pdo->prepare(
     "SELECT id, title, lesson_order, video_url
      FROM lessons
@@ -49,9 +53,14 @@ $canEdit = in_array(
     true
 );
 
-$message = (
-    ($_GET["message"] ?? "") === "created"
-) ? "Thêm bài học thành công!" : "";
+$messages = [
+    "created" => "Thêm bài học thành công!",
+    "updated" => "Cập nhật bài học thành công!",
+    "deleted" => "Xóa bài học thành công!"
+];
+
+$messageKey = $_GET["message"] ?? "";
+$message = $messages[$messageKey] ?? "";
 
 function e($value) {
     return htmlspecialchars(
@@ -95,25 +104,35 @@ function e($value) {
             </a>
         </p>
     <?php else: ?>
-        <p>Khóa học đang chờ duyệt hoặc đã duyệt. Không thể thêm bài học.</p>
+        <p>
+            Khóa học đang chờ duyệt hoặc đã duyệt.
+            Không thể thêm bài học.
+        </p>
     <?php endif; ?>
 
     <div style="overflow-x: auto;">
         <table class="data-table">
+
             <thead>
                 <tr>
                     <th>Thứ tự</th>
                     <th>Tên bài học</th>
                     <th>Video</th>
+                    <th>Thao tác</th>
                 </tr>
             </thead>
 
             <tbody>
                 <?php foreach ($lessons as $lesson): ?>
                     <tr>
-                        <td><?php echo (int)$lesson["lesson_order"]; ?></td>
 
-                        <td><?php echo e($lesson["title"]); ?></td>
+                        <td>
+                            <?php echo (int)$lesson["lesson_order"]; ?>
+                        </td>
+
+                        <td>
+                            <?php echo e($lesson["title"]); ?>
+                        </td>
 
                         <td>
                             <?php if (!empty($lesson["video_url"])): ?>
@@ -128,17 +147,82 @@ function e($value) {
                                 Chưa có
                             <?php endif; ?>
                         </td>
+
+                        
+<td>
+    <a
+        href="materials.php?lesson_id=<?php echo (int)$lesson['id']; ?>"
+        class="btn btn-primary"
+    >
+        Tài liệu
+    </a>
+
+    <?php if ($canEdit): ?>
+
+        <a
+            href="edit_lesson.php?id=<?php echo (int)$lesson['id']; ?>"
+            class="btn btn-primary"
+        >
+            Sửa
+        </a>
+
+        <form
+            action="delete_lesson.php"
+            method="POST"
+            style="display:inline-block;"
+            onsubmit="return confirm('Bạn chắc chắn muốn xóa bài học này?');"
+        >
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?php echo e($_SESSION["csrf_token"]); ?>"
+            >
+
+            <input
+                type="hidden"
+                name="lesson_id"
+                value="<?php echo (int)$lesson['id']; ?>"
+            >
+
+            <input
+                type="hidden"
+                name="course_id"
+                value="<?php echo $courseId; ?>"
+            >
+
+            <button
+                type="submit"
+                class="btn btn-danger"
+            >
+                Xóa
+            </button>
+        </form>
+
+    <?php endif; ?>
+
+    
+<a
+    href="quiz.php?lesson_id=<?php echo (int)$lesson['id']; ?>"
+    class="btn btn-primary"
+>
+    Trắc nghiệm
+</a>
+
+</td>
+
+
                     </tr>
                 <?php endforeach; ?>
 
                 <?php if (empty($lessons)): ?>
                     <tr>
-                        <td colspan="3">
+                        <td colspan="4">
                             Khóa học chưa có bài học nào.
                         </td>
                     </tr>
                 <?php endif; ?>
             </tbody>
+
         </table>
     </div>
 

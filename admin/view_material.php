@@ -17,7 +17,7 @@ if (!$materialId || $materialId < 1) {
     exit("ID tài liệu không hợp lệ.");
 }
 
-// Admin chỉ đọc tài liệu còn liên kết với bài học, khóa học
+// Admin chỉ đọc tài liệu còn liên kết với bài học, lớp học
 $stmt = $pdo->prepare(
     "SELECT
         m.id,

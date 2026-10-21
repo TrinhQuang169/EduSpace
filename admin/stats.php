@@ -46,55 +46,34 @@ $averageScore = $pdo->query(
 )->fetchColumn();
 
 $labels = [
-    "students" => "Số học viên",
-    "teachers" => "Số giảng viên",
-    "courses" => "Tổng khóa học",
-    "approved" => "Khóa học đã duyệt",
-    "pending" => "Khóa học chờ duyệt",
+    "students" => "Số học sinh",
+    "teachers" => "Số giáo viên",
+    "courses" => "Tổng lớp học",
+    "approved" => "Lớp học đã duyệt",
+    "pending" => "Lớp học chờ duyệt",
     "lessons" => "Tổng bài học",
-    "enrollments" => "Lượt đăng ký khóa học",
+    "enrollments" => "Lượt tham gia lớp học",
     "completed_lessons" => "Lượt hoàn thành bài học",
     "quiz_attempts" => "Lượt làm trắc nghiệm"
 ];
 ?>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Thống kê Admin - EduSpace</title>
-<link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
-<div class="container" style="padding:40px 0">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Thống kê hệ thống', 'stats'); ?>
+
 
 <h1>Thống kê hệ thống EduSpace</h1>
 
-<table class="data-table">
-<thead>
-<tr>
-<th>Chỉ số</th>
-<th>Giá trị</th>
-</tr>
-</thead>
-<tbody>
+<p>Bức tranh tổng quan về cộng đồng, nội dung và hoạt động học tập trên EduSpace.</p>
+<div class="edu-stats">
 <?php foreach ($stats as $key => $value): ?>
-<tr>
-<td><?= htmlspecialchars($labels[$key], ENT_QUOTES, "UTF-8") ?></td>
-<td><?= $value ?></td>
-</tr>
+<?php eduStat($value, $labels[$key], in_array($key, ['students', 'teachers', 'enrollments']) ? 'users' : (in_array($key, ['pending', 'quiz_attempts']) ? 'clock' : 'book'), in_array($key, ['approved', 'completed_lessons']) ? 'green' : ($key === 'pending' ? 'orange' : 'purple')); ?>
 <?php endforeach; ?>
-
-<tr>
-<td>Điểm trắc nghiệm trung bình toàn hệ thống</td>
-<td>
-<?= $averageScore === null
-    ? "Chưa có"
-    : htmlspecialchars((string)$averageScore, ENT_QUOTES, "UTF-8") . "/10" ?>
-</td>
-</tr>
-
-</tbody>
-</table>
+<?php eduStat($averageScore === null ? '—' : $averageScore . '/10', 'Điểm trắc nghiệm trung bình', 'award', 'blue'); ?>
+</div>
+<section class="edu-panel"><h2>Tình hình phê duyệt lớp học</h2>
+<p>Đã duyệt <strong><?= $stats['approved'] ?> / <?= $stats['courses'] ?></strong> lớp học.</p>
+<progress class="edu-progress" value="<?= $stats['approved'] ?>" max="<?= max(1, $stats['courses']) ?>" aria-label="Tỷ lệ lớp học đã duyệt"></progress>
+<p><?= $stats['pending'] ?> lớp học đang chờ được xem xét.</p>
+<a class="btn btn-secondary" href="courses.php">Quản lý lớp học <?= eduIcon('arrow') ?></a></section>
 
 <p style="margin-top:25px">
 <a href="../dashboards/admin.php">
@@ -102,6 +81,4 @@ $labels = [
 </a>
 </p>
 
-</div>
-</body>
-</html>
+<?php eduEnd(); ?>

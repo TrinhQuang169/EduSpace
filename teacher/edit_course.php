@@ -3,7 +3,7 @@
 require_once __DIR__ . "/../includes/auth.php";
 requireRole("teacher");
 
-// Lấy ID khóa học từ URL
+// Lấy ID lớp học từ URL
 $courseId = filter_input(
     INPUT_GET,
     "id",
@@ -12,12 +12,12 @@ $courseId = filter_input(
 
 if (!$courseId || $courseId < 1) {
     http_response_code(400);
-    exit("ID khóa học không hợp lệ.");
+    exit("ID lớp học không hợp lệ.");
 }
 
 $teacherId = (int)$_SESSION["user_id"];
 
-// Chỉ lấy khóa học thuộc giảng viên đang đăng nhập
+// Chỉ lấy lớp học thuộc giáo viên đang đăng nhập
 $stmt = $pdo->prepare(
     "SELECT *
      FROM courses
@@ -30,15 +30,15 @@ $course = $stmt->fetch();
 
 if (!$course) {
     http_response_code(404);
-    exit("Không tìm thấy khóa học của bạn.");
+    exit("Không tìm thấy lớp học của bạn.");
 }
 
-// Chỉ cho sửa bản nháp hoặc khóa học bị từ chối
+// Chỉ cho sửa bản nháp hoặc lớp học bị từ chối
 $editableStatuses = ["draft", "rejected"];
 
 if (!in_array($course["status"], $editableStatuses, true)) {
     http_response_code(403);
-    exit("Khóa học này hiện không được phép chỉnh sửa.");
+    exit("Lớp học này hiện không được phép chỉnh sửa.");
 }
 
 if (empty($_SESSION["csrf_token"])) {
@@ -78,10 +78,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $color = $_POST["color"] ?? "blue";
 
     if ($title === "" || $category === "") {
-        $error = "Vui lòng nhập tên và danh mục khóa học.";
+        $error = "Vui lòng nhập tên và danh mục lớp học.";
 
     } elseif (mb_strlen($title) > 255) {
-        $error = "Tên khóa học không được vượt quá 255 ký tự.";
+        $error = "Tên lớp học không được vượt quá 255 ký tự.";
 
     } elseif (mb_strlen($category) > 100) {
         $error = "Danh mục không được vượt quá 100 ký tự.";
@@ -93,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "Biểu tượng không hợp lệ.";
 
     } elseif (!in_array($color, $allowedColors, true)) {
-        $error = "Màu khóa học không hợp lệ.";
+        $error = "Màu lớp học không hợp lệ.";
 
     } else {
 
@@ -139,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             )
         ) {
             http_response_code(409);
-            exit("Trạng thái khóa học đã thay đổi. Vui lòng tải lại.");
+            exit("Trạng thái lớp học đã thay đổi. Vui lòng tải lại.");
         }
 
         header(
@@ -158,29 +158,17 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Sửa khóa học - EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Chỉnh sửa lớp học', 'courses'); ?>
 
-<body class="auth-page">
 
-<div class="auth-container">
-    <div class="auth-card">
+    <div class="edu-form-card">
 
-        <a href="courses.php" class="auth-logo">
-            🎓 EduSpace
-        </a>
 
-        <h1>Chỉnh sửa khóa học</h1>
+
+        <h1>Chỉnh sửa lớp học</h1>
 
         <p class="auth-subtitle">
-            Cập nhật thông tin khóa học của bạn
+            Cập nhật thông tin lớp học của bạn
         </p>
 
         <?php if ($error !== ""): ?>
@@ -198,7 +186,7 @@ function e($value) {
             >
 
             <div class="form-group">
-                <label for="title">Tên khóa học</label>
+                <label for="title">Tên lớp học</label>
                 <input
                     type="text"
                     id="title"
@@ -275,7 +263,4 @@ function e($value) {
         </p>
 
     </div>
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

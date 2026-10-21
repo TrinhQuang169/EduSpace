@@ -23,7 +23,7 @@ function e($value) {
     );
 }
 
-// Kiểm tra quyền truy cập khóa học
+// Kiểm tra quyền truy cập lớp học
 $stmt = $pdo->prepare(
     "SELECT q.id AS quiz_id, q.title AS quiz_title,
             l.title AS lesson_title, l.course_id
@@ -93,8 +93,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         try {
             $pdo->beginTransaction();
 
-            // Khóa khóa học, phối hợp với thao tác
-            // sửa nội dung của giảng viên.
+            // Khóa lớp học, phối hợp với thao tác
+            // sửa nội dung của giáo viên.
             $lock = $pdo->prepare(
                 "SELECT status FROM courses
                  WHERE id = ?
@@ -105,7 +105,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if ($lock->fetchColumn() !== "approved") {
                 throw new RuntimeException(
-                    "Khóa học chưa được phê duyệt."
+                    "Lớp học chưa được phê duyệt."
                 );
             }
 
@@ -140,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 );
             }
 
-            // Xác nhận học viên đã trả lời mọi câu
+            // Xác nhận học sinh đã trả lời mọi câu
             $validIds = [];
 
             foreach ($questions as $question) {
@@ -197,7 +197,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $correctCount * 10 / $total, 2
             );
 
-            // Mỗi học viên chỉ có một lượt làm.
+            // Mỗi học sinh chỉ có một lượt làm.
             // UNIQUE trong MySQL chặn nộp trùng.
             $stmt = $pdo->prepare(
                 "INSERT INTO quiz_attempts
@@ -283,7 +283,7 @@ $stmt->execute([$quizId, $studentId]);
 $attempt = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Chỉ lấy đáp án đúng và giải thích
-// KHI HỌC VIÊN ĐÃ NỘP BÀI.
+// KHI HỌC SINH ĐÃ NỘP BÀI.
 if ($attempt) {
     $stmt = $pdo->prepare(
         "SELECT
@@ -320,144 +320,51 @@ if ($attempt) {
 $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Trắc nghiệm - EduSpace</title>
-<link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
-
-<div class="container" style="padding:40px 0">
-
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Trắc nghiệm & kết quả', 'my-courses'); ?>
+<span class="edu-eyebrow">KIỂM TRA KIẾN THỨC</span>
 <h1><?= e($quiz["quiz_title"]) ?></h1>
 <p>Bài học: <?= e($quiz["lesson_title"]) ?></p>
-
-<?php if ($error): ?>
-<p style="color:red"><?= e($error) ?></p>
-<?php endif; ?>
+<?php if ($error): ?><div class="alert alert-error" role="alert"><?= e($error) ?></div><?php endif; ?>
 
 <?php if ($attempt): ?>
-
-<h2>Kết quả bài làm</h2>
-
-<p>
-<strong>Điểm: <?= e($attempt["score"]) ?>/10</strong>
-</p>
-
-<p>
-Số câu đúng:
-<?= (int)$attempt["correct_count"] ?> /
-<?= (int)$attempt["total_questions"] ?>
-</p>
-
-<p>Ngày nộp: <?= e($attempt["submitted_at"]) ?></p>
-
+<section class="edu-result" aria-label="Kết quả trắc nghiệm">
+    <div class="edu-score"><strong><?= e($attempt["score"]) ?></strong><small>trên 10 điểm</small></div>
+    <div><span class="edu-eyebrow">ĐÃ HOÀN THÀNH BÀI LÀM</span><h2>Kết quả trắc nghiệm</h2><p>Trả lời đúng <strong><?= (int)$attempt["correct_count"] ?> / <?= (int)$attempt["total_questions"] ?></strong> câu hỏi.</p><p>Ngày nộp: <?= e($attempt["submitted_at"]) ?></p></div>
+</section>
+<div class="edu-section-heading"><h2>Xem lại câu trả lời</h2></div>
 <?php foreach ($questions as $index => $q): ?>
-<hr>
-
-<h3>
-Câu <?= $index + 1 ?>:
-<?= e($q["question_text"]) ?>
-</h3>
-
-<?php foreach (["A","B","C","D"] as $letter): ?>
-<p>
-<?= $letter ?>.
-<?= e($q["option_" . strtolower($letter)]) ?>
-</p>
+<section class="edu-question">
+    <?= eduBadge($q['is_correct'] ? 'complete' : 'rejected', $q['is_correct'] ? 'Trả lời đúng' : 'Trả lời sai') ?>
+    <h3>Câu <?= $index + 1 ?>: <?= e($q["question_text"]) ?></h3>
+    <?php foreach (["A","B","C","D"] as $letter): ?>
+    <div class="edu-answer <?= $letter === $q['correct_answer'] ? 'edu-answer--correct' : ($letter === $q['selected_answer'] ? 'edu-answer--wrong' : '') ?>">
+        <span class="edu-answer-letter"><?= $letter ?></span><span><?= e($q["option_" . strtolower($letter)]) ?><?php if ($letter === $q['correct_answer']): ?> <strong> · Đáp án đúng</strong><?php endif; ?><?php if ($letter === $q['selected_answer']): ?> <strong> · Bạn đã chọn</strong><?php endif; ?></span>
+    </div>
+    <?php endforeach; ?>
+    <div class="edu-explanation"><strong>Giải thích chi tiết</strong><?= nl2br(e($q["explanation"])) ?></div>
+</section>
 <?php endforeach; ?>
-
-<p>
-Bạn đã chọn:
-<strong><?= e($q["selected_answer"]) ?></strong>
-</p>
-
-<p>
-Kết quả:
-<strong>
-<?= $q["is_correct"] ? "Đúng" : "Sai" ?>
-</strong>
-</p>
-
-<p>
-Đáp án đúng:
-<strong><?= e($q["correct_answer"]) ?></strong>
-</p>
-
-<p>
-Giải thích chi tiết:
-<?= nl2br(e($q["explanation"])) ?>
-</p>
-
-<?php endforeach; ?>
-
 <?php else: ?>
-
-<?php if (!$questions): ?>
-<p>Giảng viên chưa tạo câu hỏi trắc nghiệm.</p>
-<?php else: ?>
-
-<p>
-Số câu hỏi: <?= count($questions) ?>.
-Mỗi câu chọn một đáp án.
-</p>
-
-<form method="POST">
-<input type="hidden" name="csrf_token"
- value="<?= e($_SESSION["csrf_token"]) ?>">
-
-<?php foreach ($questions as $index => $q): ?>
-<hr>
-
-<h3>
-Câu <?= $index + 1 ?>:
-<?= e($q["question_text"]) ?>
-</h3>
-
-<?php foreach (["A","B","C","D"] as $letter): ?>
-
-<label style="display:block;margin:10px 0">
-<input
- type="radio"
- name="answers[<?= (int)$q["id"] ?>]"
- value="<?= $letter ?>"
- required
- <?php if (
-    ($_POST["answers"][$q["id"]] ?? "") === $letter
- ): ?>checked<?php endif; ?>
->
-<?= $letter ?>.
-<?= e($q["option_" . strtolower($letter)]) ?>
-</label>
-
-<?php endforeach; ?>
-
-<?php endforeach; ?>
-
-<p style="margin-top:25px">
-<button
- type="submit"
- class="btn btn-primary"
- onclick="return confirm('Nộp bài trắc nghiệm? Sau khi nộp bạn không thể làm lại.');"
->
- Nộp bài và xem kết quả
-</button>
-</p>
-
-</form>
-
+    <?php if (!$questions): ?>
+    <div class="edu-empty"><?= eduIcon('file') ?><h2>Chưa có câu hỏi</h2><p>Giáo viên chưa tạo câu hỏi trắc nghiệm cho bài học này.</p></div>
+    <?php else: ?>
+    <div class="edu-panel"><strong><?= count($questions) ?> câu hỏi</strong><p class="edu-quiz-hint">Mỗi câu chọn một đáp án. Kiểm tra câu trả lời trước khi nộp; bạn chỉ có một lượt làm bài.</p></div>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="<?= e($_SESSION["csrf_token"]) ?>">
+        <?php foreach ($questions as $index => $q): ?>
+        <fieldset class="edu-question">
+            <legend>Câu <?= $index + 1 ?>: <?= e($q["question_text"]) ?></legend>
+            <?php foreach (["A","B","C","D"] as $letter): ?>
+            <label class="edu-answer">
+                <input type="radio" name="answers[<?= (int)$q["id"] ?>]" value="<?= $letter ?>" required <?php if (($_POST["answers"][$q["id"]] ?? "") === $letter): ?>checked<?php endif; ?>>
+                <span class="edu-answer-letter"><?= $letter ?></span><span><?= e($q["option_" . strtolower($letter)]) ?></span>
+            </label>
+            <?php endforeach; ?>
+        </fieldset>
+        <?php endforeach; ?>
+        <p><button type="submit" class="btn btn-primary" onclick="return confirm('Nộp bài trắc nghiệm? Sau khi nộp bạn không thể làm lại.');">Nộp bài và xem kết quả <?= eduIcon('arrow') ?></button></p>
+    </form>
+    <?php endif; ?>
 <?php endif; ?>
-
-<?php endif; ?>
-
-<p style="margin-top:25px">
-<a href="lesson.php?lesson_id=<?= $lessonId ?>">
- ← Quay lại bài học
-</a>
-</p>
-
-</div>
-</body>
-</html>
+<p><a href="lesson.php?lesson_id=<?= $lessonId ?>">← Quay lại bài học</a></p>
+<?php eduEnd(); ?>

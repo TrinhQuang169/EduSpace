@@ -1,0 +1,153 @@
+/* Decorative motion only. Enabled by effects.js after checking user preferences. */
+.edu-topbar-tools { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
+.edu-motion-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid #e3dcf7; border-radius: 12px; padding: 10px 12px; min-height: 40px; background: #faf8ff; color: #75619f; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; transition: background .2s, box-shadow .2s; }
+.edu-motion-toggle[hidden] { display: none !important; }
+.edu-motion-toggle[aria-pressed=true] { color: #7353c1; background: #f0e9ff; border-color: #d8c9fb; box-shadow: 0 0 16px #9872db12; }
+.edu-motion-toggle:hover { background: #eae0fc; }
+.edu-motion-toggle:focus-visible { outline: 3px solid #a18add; outline-offset: 4px; }
+.edu-motion-toggle:disabled { cursor: default; opacity: .65; }
+.edu-ambient { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; contain: strict; }
+.edu-ambient > i { position: absolute; display: block; width: 540px; height: 540px; border-radius: 50%; background: radial-gradient(circle, #b795f520, #b795f500 70%); top: -220px; right: -100px; }
+.edu-ambient > i:nth-child(2) { background: radial-gradient(circle, #86dced20, #86dced00 70%); top: 38%; left: 13%; width: 430px; height: 430px; }
+.edu-ambient > i:nth-child(3) { background: radial-gradient(circle, #edaeda16, #edaeda00 70%); top: 72%; right: 5%; width: 430px; height: 430px; }
+.edu-app .edu-workarea { position: relative; z-index: 1; }
+.edu-public > main, .edu-public > footer { position: relative; z-index: 1; }
+.edu-app { background: radial-gradient(ellipse at top right, #f0eaff, transparent 50%), #f8f8fd; }
+.edu-app .edu-topbar { background: #ffffffe0; }
+.edu-sidebar { background: radial-gradient(ellipse at 0 0, #443572, transparent 55%), linear-gradient(165deg, #24213f, #201d35); }
+.edu-sidebar::before { content: ''; position: absolute; top: 15%; left: 0; width: 2px; height: 120px; border-radius: 4px; background: linear-gradient(transparent, #c3b0ff99, transparent); pointer-events: none; }
+.edu-brand-mark { position: relative; overflow: hidden; }
+.edu-brand-mark::after { content: ''; position: absolute; inset: -50%; background: linear-gradient(115deg, transparent 40%, #fff7 50%, transparent 60%); transform: translateX(-110%); pointer-events: none; }
+.edu-nav a .edu-icon { transition: transform .25s; }
+.edu-nav a:hover .edu-icon { transform: rotate(-8deg) scale(1.12); }
+.edu-avatar { box-shadow: 0 0 0 1px #c7b4ea44, 0 4px 15px #9173c51a; }
+.edu-welcome { isolation: isolate; min-height: 318px; background: radial-gradient(ellipse at 12% 0, #9a6fe4, transparent 57%), linear-gradient(120deg, #6753c9, #5a52ba 65%, #42488c); border-color: #a693e677; box-shadow: 0 18px 40px #7356c624, inset 0 1px 0 #ffffff40; }
+.edu-welcome::before, .edu-public .hero-visual::before { content: ''; position: absolute; width: 430px; height: 430px; border: 0; box-shadow: none; border-radius: 50%; background: radial-gradient(circle, #d4b9ff35, transparent 68%); top: -230px; left: 20%; bottom: auto; z-index: -1; pointer-events: none; }
+.edu-welcome h1 { text-shadow: 0 3px 22px #35237218; }
+.edu-welcome .edu-eyebrow { display: inline-flex; align-items: center; gap: 9px; padding: 6px 11px; border: 1px solid #ffffff29; border-radius: 30px; background: #ffffff0d; font-size: 8px; }
+.edu-welcome .edu-eyebrow::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #c3ffed; box-shadow: 0 0 9px #d2fff688; }
+.edu-learning-art { position: relative; isolation: isolate; }
+.edu-welcome-art.edu-learning-art { flex: 0 0 37%; height: auto; min-height: 250px; margin: -20px -14px -20px 5px; }
+.edu-scene { display: block; width: 100%; height: auto; overflow: visible; }
+.edu-scene-orbit { transform-origin: 232px 175px; }
+.edu-art-tag { position: absolute; display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; background: #ffffffed; border: 1px solid #fff; border-radius: 12px; color: #72609d; font-size: 10px; font-weight: 600; box-shadow: 0 9px 25px #2e1b6526; white-space: nowrap; }
+.edu-art-tag .edu-icon { width: 15px; height: 15px; color: #9d83d6; }
+.edu-art-tag--one { left: 0; top: 12%; transform: rotate(-6deg); }
+.edu-art-tag--two { right: 0; bottom: 9%; transform: rotate(5deg); background: #effff9f2; color: #48857d; border-color: #d3ffed; }
+.edu-glitter { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; z-index: 0; }
+.edu-glitter > i { position: absolute; left: var(--sx); top: var(--sy); width: var(--ss, 5px); height: var(--ss, 5px); background: #fff8; border-radius: 50%; box-shadow: 0 0 8px #ffffff25; opacity: .5; }
+.edu-glitter > i:nth-child(3n) { border-radius: 0; clip-path: polygon(50% 0, 62% 37%, 100% 50%, 62% 63%, 50% 100%, 38% 63%, 0 50%, 38% 37%); width: 12px; height: 12px; background: #e3d5ff; }
+.edu-course-card, .edu-action-card { position: relative; isolation: isolate; }
+.edu-course-card::after, .edu-action-card::after, .edu-welcome::after, .edu-public .hero-visual::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(260px circle at var(--spot-x, 50%) var(--spot-y, 50%), #b595ff15, transparent 75%); opacity: 0; transition: opacity .35s; }
+.edu-welcome::after, .edu-public .hero-visual::after { background: radial-gradient(240px circle at var(--spot-x, 50%) var(--spot-y, 50%), #e1d1ff20, transparent 75%); }
+.edu-has-spotlight::after { opacity: 1 !important; }
+.edu-course-card { transition: transform .28s, box-shadow .28s, border-color .28s; }
+.edu-course-cover { background-image: url('../images/class-pattern.svg'), radial-gradient(ellipse at top left, #b9a3ef88, transparent 65%), linear-gradient(125deg, #8b75d9, #6051b9); }
+.edu-course-cover::before { content: ''; position: absolute; width: 120px; height: 120px; border: 1px solid #ffffff22; border-radius: 50%; top: -74px; left: 15%; box-shadow: 0 0 0 22px #ffffff06, 0 0 0 44px #ffffff05; pointer-events: none; }
+.edu-course-cover > .edu-icon { box-shadow: 0 5px 17px #38277c12; }
+.edu-course-card:hover { border-color: #d5c6f6; box-shadow: 0 18px 36px #7957ab1f, 0 0 0 1px #ede5ff; }
+.edu-action-card:hover { box-shadow: 0 15px 30px #7957ab13; }
+.edu-stat { box-shadow: 0 5px 20px #4a336708, inset 0 1px white; }
+.edu-stat-icon { transition: transform .25s, box-shadow .25s; }
+.edu-stat:hover .edu-stat-icon { transform: translateY(-3px) rotate(-6deg); box-shadow: 0 7px 14px #7152a115; }
+.edu-action-card > .edu-icon { transition: transform .25s, background .25s; }
+.edu-action-card:hover > .edu-icon { transform: rotate(-35deg); background: #e9e0fc; }
+.edu-app .btn, .edu-public .btn { position: relative; overflow: hidden; isolation: isolate; }
+.edu-app .btn:active, .edu-public .btn:active { transform: translateY(0) scale(.98); }
+.edu-app .btn-primary:hover, .edu-public .btn-primary:hover { box-shadow: 0 8px 23px #8964d53b; }
+.edu-ripple { position: absolute; border-radius: 50%; width: var(--ripple-size); height: var(--ripple-size); left: var(--ripple-x); top: var(--ripple-y); background: currentColor; opacity: 0; pointer-events: none; transform: scale(0); }
+.edu-join-dialog[open] { transform-origin: center; }
+.edu-app .edu-join-dialog::backdrop { background: #31224f80; }
+.edu-answer:has(input:checked) { box-shadow: 0 3px 15px #916bd510; }
+.edu-score { position: relative; box-shadow: 0 0 0 5px #fff6, 0 8px 23px #9672d124; }
+.edu-score::after { content: ''; position: absolute; inset: -11px; border-radius: 50%; border: 1px dashed #aa90d999; pointer-events: none; }
+.edu-public { background: #fbfaff; }
+.edu-public .header { background: #ffffffed; backdrop-filter: blur(18px); border-bottom-color: #ece7f8; }
+.edu-public .nav-actions { gap: 16px; }
+.edu-public .hero { position: relative; overflow: hidden; background: radial-gradient(ellipse at 5% 15%, #e5ddff80, transparent 50%), radial-gradient(ellipse at 95% 90%, #d9eff780, transparent 45%), #f7f5ff; }
+.edu-public .hero h1 span { background: linear-gradient(105deg, #6452d0, #a463cc, #517ed0); background-clip: text; -webkit-background-clip: text; color: transparent; }
+.edu-public .hero-text .eyebrow { display: inline-block; padding: 8px 13px; border: 1px solid #ddd2f7; border-radius: 30px; background: #f0eafd; font-size: 10px; }
+.edu-public .hero-visual { position: relative; isolation: isolate; border: 1px solid #b8a2ed66; background: radial-gradient(ellipse at top left, #b185e5, transparent 65%), linear-gradient(145deg, #7c68d9, #5755b3); border-radius: 32px; box-shadow: 0 24px 60px #7655bd2e, inset 0 1px #ffffff66; padding: 20px 28px 32px; }
+.edu-public .hero-visual::before { z-index: -1; }
+.edu-public .hero-visual .edu-learning-art { width: 100%; max-width: 390px; margin: -8px 0 -6px; }
+.edu-public .hero-visual h2 { position: relative; z-index: 1; font-size: 23px; }
+.edu-public .hero-visual p { position: relative; z-index: 1; font-size: 13px; color: #eeebff; margin-top: 7px; }
+.edu-public .btn-primary { background: linear-gradient(120deg, #7760df, #6250c9); box-shadow: 0 5px 14px #7760df25; transition: transform .2s, box-shadow .2s; }
+.edu-public .course-card, .edu-public .feature-card { border-radius: 21px; box-shadow: 0 5px 20px #4a336708; }
+.edu-public .course-image { position: relative; overflow: hidden; }
+.edu-public .course-image::before { content: ''; position: absolute; inset: 0; background: url('../images/class-pattern.svg') center / cover; opacity: .5; pointer-events: none; }
+.edu-public .course-image > span { position: relative; transition: transform .3s; }
+.edu-public .course-card:hover .course-image > span { transform: translateY(-5px) rotate(-7deg); }
+.edu-public .search-box { border: 1px solid #ebe3f8; }
+.edu-public .search-box:focus-within { border-color: #bba5e5; box-shadow: 0 0 0 4px #9470d313; }
+.edu-public .feature-icon { transition: transform .3s; }
+.edu-public .feature-card:hover .feature-icon { transform: translateY(-4px) rotate(-8deg); }
+/* Continuous effects animate only transforms/opacity and can all be paused. */
+.edu-motion-on .edu-ambient > i { animation: edu-drift 18s ease-in-out infinite alternate; }
+.edu-motion-on .edu-ambient > i:nth-child(2) { animation-delay: -8s; animation-duration: 23s; }
+.edu-motion-on .edu-ambient > i:nth-child(3) { animation-delay: -13s; animation-duration: 27s; }
+.edu-motion-on .edu-welcome::before, .edu-motion-on .hero-visual::before { animation: edu-aurora 14s ease-in-out infinite alternate; }
+.edu-motion-on .edu-scene-book { animation: edu-book-bob 6s ease-in-out infinite; }
+.edu-motion-on .edu-scene-cap { animation: edu-cap-bob 7s ease-in-out infinite; }
+.edu-motion-on .edu-scene-check { animation: edu-piece-bob 5s ease-in-out infinite; }
+.edu-motion-on .edu-scene-play { animation: edu-piece-bob 6s ease-in-out -3s infinite; }
+.edu-motion-on .edu-scene-orbit { animation: edu-orbit-turn 55s linear infinite; }
+.edu-motion-on .edu-scene-spark { animation: edu-soft-spark 5s ease-in-out infinite; }
+.edu-motion-on .edu-art-tag--one { animation: edu-tag-one 6s ease-in-out -2s infinite; }
+.edu-motion-on .edu-art-tag--two { animation: edu-tag-two 7s ease-in-out -4s infinite; }
+.edu-motion-on .edu-glitter > i { animation: edu-soft-spark var(--sd, 5s) ease-in-out var(--delay, 0s) infinite; }
+.edu-motion-on .edu-brand-mark::after { animation: edu-logo-shine 9s ease-in-out infinite; }
+.edu-motion-on .edu-course-cover > .edu-icon { animation: edu-piece-bob 7s ease-in-out infinite; }
+.edu-motion-on .edu-course-card:nth-child(even) .edu-course-cover > .edu-icon { animation-delay: -3s; }
+.edu-motion-on .edu-score::after { animation: edu-orbit-turn 35s linear infinite; }
+.edu-motion-on .edu-join-dialog[open] { animation: edu-dialog-in .3s cubic-bezier(.22, 1, .36, 1); }
+.edu-motion-on .edu-join-dialog[open]::backdrop { animation: edu-backdrop-in .25s ease; }
+.edu-motion-on .edu-ripple { animation: edu-ripple-out .6s ease-out forwards; }
+.edu-motion-on .edu-effects-offscreen, .edu-motion-on .edu-effects-offscreen *, .edu-motion-on .edu-effects-offscreen::before, .edu-motion-on .edu-effects-offscreen::after, .edu-effects-paused *, .edu-effects-paused *::before, .edu-effects-paused *::after { animation-play-state: paused !important; }
+.edu-motion-off *, .edu-motion-off *::before, .edu-motion-off *::after { animation: none !important; transition-duration: 0s !important; }
+.edu-motion-off .edu-glitter { display: none; }
+.edu-motion-off .edu-has-spotlight::after { opacity: 0 !important; }
+@keyframes edu-drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(65px, 45px, 0); } }
+@keyframes edu-aurora { from { transform: translate3d(-50px, 0, 0) scale(1); opacity: .6; } to { transform: translate3d(120px, 80px, 0) scale(1.25); opacity: 1; } }
+@keyframes edu-book-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes edu-cap-bob { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(4px, -15px); } }
+@keyframes edu-piece-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes edu-orbit-turn { to { transform: rotate(360deg); } }
+@keyframes edu-soft-spark { 0%, 100% { opacity: .35; } 50% { opacity: .9; } }
+@keyframes edu-tag-one { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-8px) rotate(-3deg); } }
+@keyframes edu-tag-two { 0%, 100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(7px) rotate(2deg); } }
+@keyframes edu-logo-shine { 0%, 70% { transform: translateX(-110%); } 88%, 100% { transform: translateX(110%); } }
+@keyframes edu-dialog-in { from { opacity: .4; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes edu-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes edu-ripple-out { from { transform: scale(0); opacity: .22; } to { transform: scale(1); opacity: 0; } }
+@media (hover: hover) and (pointer: fine) {
+    .edu-motion-on .edu-course-card:hover { transform: perspective(900px) translateY(-5px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); }
+}
+@media (max-width: 1100px) { .edu-motion-toggle span { display: none; } .edu-welcome-art.edu-learning-art { flex-basis: 34%; } .edu-art-tag { font-size: 9px; padding: 7px 9px; } }
+@media (max-width: 900px) { .edu-public .nav-actions { gap: 10px; } .edu-ambient > i { width: 340px; height: 340px; } .edu-ambient > i:nth-child(3) { display: none; } }
+@media (max-width: 600px) {
+    .edu-topbar-tools { gap: 8px; }
+    .edu-motion-toggle { width: 35px; min-height: 35px; padding: 7px; border-radius: 10px; }
+    .edu-welcome { flex-direction: column; align-items: stretch; padding: 25px 24px 14px; }
+    .edu-welcome .edu-eyebrow { font-size: 7px; letter-spacing: 1px; padding-inline: 8px; }
+    .edu-welcome-art.edu-learning-art { display: block; flex: none; width: min(100%, 260px); min-height: 0; margin: 2px auto 0; }
+    .edu-welcome-art .edu-scene { width: 100%; }
+    .edu-art-tag { font-size: 8px; padding: 6px 8px; border-radius: 9px; }
+    .edu-art-tag--one { top: 15%; left: -7px; }
+    .edu-art-tag--two { right: -7px; bottom: 10%; }
+    .edu-art-tag .edu-icon { width: 12px; height: 12px; }
+    .edu-public .nav { gap: 10px; }
+    .edu-public .logo { font-size: 20px; }
+    .edu-public .nav-actions { flex-wrap: wrap; justify-content: center; font-size: 12px; }
+    .edu-public .nav-actions .btn { padding: 10px 12px; font-size: 12px; }
+    .edu-public .hero { padding: 45px 0; }
+    .edu-public .hero-visual { padding: 18px 24px 27px; border-radius: 25px; }
+    .edu-public .hero-visual h2 { font-size: 20px; }
+    .edu-public .hero-visual .edu-learning-art { max-width: 280px; }
+    .edu-public .hero-text .eyebrow { font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-app *, .edu-app *::before, .edu-app *::after, .edu-public *, .edu-public *::before, .edu-public *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    .edu-has-spotlight::after { opacity: 0 !important; }
+}
+@media print { .edu-ambient, .edu-glitter, .edu-motion-toggle, .edu-art-tag { display: none !important; } .edu-scene * { animation: none !important; } }

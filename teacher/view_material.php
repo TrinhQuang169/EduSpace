@@ -19,7 +19,7 @@ if (!$materialId || $materialId < 1) {
 
 $teacherId = (int)$_SESSION["user_id"];
 
-// Chỉ lấy tài liệu thuộc khóa học của giảng viên
+// Chỉ lấy tài liệu thuộc lớp học của giáo viên
 $stmt = $pdo->prepare(
     "SELECT
         m.id,

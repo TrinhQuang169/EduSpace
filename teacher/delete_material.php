@@ -46,7 +46,7 @@ $teacherId = (int)$_SESSION["user_id"];
 $pdo->beginTransaction();
 
 try {
-    // Tìm khóa học chứa bài học này
+    // Tìm lớp học chứa bài học này
     $stmt = $pdo->prepare(
         "SELECT c.id, c.status
          FROM courses c
@@ -128,7 +128,7 @@ try {
     error_log($e->getMessage());
 
     http_response_code(400);
-    exit("Không thể xóa tài liệu. Hãy kiểm tra quyền và trạng thái khóa học.");
+    exit("Không thể xóa tài liệu. Hãy kiểm tra quyền và trạng thái lớp học.");
 }
 
 // Sau khi DB lưu thành công mới xóa file vật lý.

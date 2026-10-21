@@ -2,6 +2,7 @@
 
 <?php
 require_once __DIR__ . "/config/database.php";
+require_once __DIR__ . "/includes/artwork.php";
 
 $sql = "SELECT id, title, category, icon, color,
                students, teacher_name
@@ -24,8 +25,10 @@ $courses = $stmt->fetchAll();
           content="width=device-width, initial-scale=1.0">
     <title>EduSpace - Học tập trực tuyến</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/effects.css?v=20261014-2">
+    <script src="assets/js/effects.js?v=20261014-2" defer></script>
 </head>
-<body>
+<body class="edu-public">
 
 <header class="header">
     <div class="container nav">
@@ -35,11 +38,12 @@ $courses = $stmt->fetchAll();
 
         <nav class="nav-links">
             <a href="index.php">Trang chủ</a>
-            <a href="#courses">Khóa học</a>
+            <a href="#courses">Lớp học</a>
             <a href="#features">Giới thiệu</a>
         </nav>
 
         <div class="nav-actions">
+            <?php eduMotionControl(); ?>
             <a href="auth/login.php" class="login-link">
     Đăng nhập
 </a>
@@ -65,17 +69,17 @@ $courses = $stmt->fetchAll();
 
                 <p>
                     Học tập mọi lúc, mọi nơi cùng EduSpace.
-                    Khám phá các khóa học chất lượng,
+                    Khám phá các lớp học chất lượng,
                     theo dõi tiến độ và nâng cao kỹ năng.
                 </p>
 
                 <a href="#courses" class="btn btn-primary">
-                    Khám phá khóa học →
+                    Khám phá lớp học →
                 </a>
             </div>
 
             <div class="hero-visual">
-                <div class="hero-icon">🎓</div>
+                <div class="edu-learning-art" aria-hidden="true"><?= eduLearningArtwork() ?><span class="edu-art-tag edu-art-tag--one">✦ Khám phá tri thức</span><span class="edu-art-tag edu-art-tag--two">✧ Nuôi dưỡng đam mê</span></div>
                 <h2>Học tập không giới hạn</h2>
                 <p>Kiến thức trong tầm tay bạn</p>
             </div>
@@ -88,7 +92,7 @@ $courses = $stmt->fetchAll();
                 <input
                     type="text"
                     id="searchInput"
-                    placeholder="Tìm kiếm khóa học..."
+                    placeholder="Tìm kiếm lớp học..."
                 >
                 <button id="searchBtn" class="btn btn-primary">
                     Tìm kiếm
@@ -102,12 +106,12 @@ $courses = $stmt->fetchAll();
             <div class="section-heading">
                 <div>
                     <span class="section-label">
-                        KHÁM PHÁ KHÓA HỌC
+                        KHÁM PHÁ LỚP HỌC
                     </span>
-                    <h2>Khóa học nổi bật</h2>
+                    <h2>Lớp học nổi bật</h2>
                     <p>
                         Bắt đầu hành trình học tập
-                        với các khóa học phù hợp.
+                        với các lớp học phù hợp.
                     </p>
                 </div>
             </div>
@@ -145,7 +149,7 @@ $courses = $stmt->fetchAll();
                             <div class="course-footer">
                                 <span>
                                     👥 <?php echo $course['students']; ?>
-                                    học viên
+                                    học sinh
                                 </span>
                                 <span class="free">Miễn phí</span>
                             </div>
@@ -155,7 +159,7 @@ $courses = $stmt->fetchAll();
             </div>
 
             <p id="noResults" class="no-results" hidden>
-                Không tìm thấy khóa học phù hợp.
+                Không tìm thấy lớp học phù hợp.
             </p>
         </div>
     </section>

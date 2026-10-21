@@ -4,7 +4,7 @@ require_once __DIR__ . "/../includes/auth.php";
 
 requireRole("student");
 
-// Lấy ID khóa học
+// Lấy ID lớp học
 $courseId = filter_input(
     INPUT_GET,
     "course_id",
@@ -13,12 +13,12 @@ $courseId = filter_input(
 
 if (!$courseId || $courseId < 1) {
     http_response_code(400);
-    exit("ID khóa học không hợp lệ.");
+    exit("ID lớp học không hợp lệ.");
 }
 
 $studentId = (int)$_SESSION["user_id"];
 
-// Kiểm tra học viên đã đăng ký và khóa học được duyệt
+// Kiểm tra học sinh đã đăng ký và lớp học được duyệt
 $stmt = $pdo->prepare(
     "SELECT
         c.id,
@@ -41,8 +41,8 @@ $course = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$course) {
     http_response_code(403);
     exit(
-        "Bạn chưa đăng ký khóa học này " .
-        "hoặc khóa học chưa được phê duyệt."
+        "Bạn chưa tham gia lớp học này " .
+        "hoặc lớp học chưa được phê duyệt."
     );
 }
 
@@ -93,36 +93,18 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Nội dung lớp học', 'my-courses'); ?>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
 
-    <title>Vào học - EduSpace</title>
 
-    <link
-        rel="stylesheet"
-        href="../assets/css/style.css"
-    >
-</head>
-
-<body>
-
-<div class="container" style="padding: 40px 0;">
-
-    <h1>Học trực tuyến</h1>
+    <span class="edu-eyebrow">LỚP HỌC CỦA BẠN</span><h1>Nội dung lớp học</h1><section class="edu-panel">
 
     <h2>
         <?php echo e($course["title"]); ?>
     </h2>
 
     <p>
-        <strong>Giảng viên:</strong>
+        <strong>Giáo viên:</strong>
         <?php echo e(
             $course["teacher_name"] ?? "Chưa xác định"
         ); ?>
@@ -134,7 +116,7 @@ function e($value) {
     </p>
 
     <p>
-        <strong>Mô tả khóa học:</strong>
+        <strong>Mô tả lớp học:</strong>
         <?php echo nl2br(e(
             $course["description"] ?? ""
         )); ?>
@@ -156,13 +138,11 @@ function e($value) {
 
 
 
-    <h2 style="margin-top: 30px;">
+    </section><h2 style="margin-top: 30px;">
         Danh sách bài học
     </h2>
 
-    <div style="overflow-x: auto;">
-
-        <table class="data-table">
+    <div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
 
             <thead>
                 <tr>
@@ -206,7 +186,7 @@ function e($value) {
 
                             <?php elseif ($hasAttempt): ?>
 
-                                Đã hoàn thành
+                                <?= eduBadge("complete") ?>
 
                                 <strong>
                                     <?php echo e(
@@ -216,7 +196,7 @@ function e($value) {
 
                             <?php else: ?>
 
-                                Chưa làm
+                                <?= eduBadge("incomplete", "Chưa làm") ?>
 
                                 (<?php echo (int)$lesson["total_questions"]; ?>
                                 câu hỏi)
@@ -269,7 +249,7 @@ function e($value) {
 
                     <tr>
                         <td colspan="4">
-                            Khóa học chưa có bài học nào.
+                            Lớp học chưa có bài học nào.
                         </td>
                     </tr>
 
@@ -277,19 +257,14 @@ function e($value) {
 
             </tbody>
 
-        </table>
-
-    </div>
+        </table></div>
 
     <p style="margin-top: 25px;">
 
         <a href="my_courses.php">
-            ← Quay lại Khóa học của tôi
+            ← Quay lại Lớp học của tôi
         </a>
 
     </p>
 
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

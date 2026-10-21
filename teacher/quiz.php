@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (!$canEdit) {
         http_response_code(403);
-        exit("Khóa học không được phép chỉnh sửa.");
+        exit("Lớp học không được phép chỉnh sửa.");
     }
 
     $action = $_POST["action"] ?? "";
@@ -124,7 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         try {
             $pdo->beginTransaction();
 
-            // Mọi thao tác sửa phải khóa bản ghi khóa học
+            // Mọi thao tác sửa phải khóa bản ghi lớp học
             $lock = $pdo->prepare(
                 "SELECT status FROM courses
                  WHERE id = ? AND teacher_id = ?
@@ -137,7 +137,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $status, ["draft", "rejected"], true
             )) {
                 throw new RuntimeException(
-                    "Khóa học đã thay đổi trạng thái."
+                    "Lớp học đã thay đổi trạng thái."
                 );
             }
 
@@ -273,35 +273,27 @@ if ($quiz) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Quản lý trắc nghiệm - EduSpace</title>
-<link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Quản lý trắc nghiệm', 'courses'); ?>
 
-<div class="container" style="padding:40px 0">
+
 
 <h1>Quản lý trắc nghiệm</h1>
-<p>Khóa học: <?= e($lesson["course_title"]) ?></p>
+<p>Lớp học: <?= e($lesson["course_title"]) ?></p>
 <p>Bài học: <?= e($lesson["lesson_title"]) ?></p>
 
 <?php if ($error): ?>
-<p style="color:red"><?= e($error) ?></p>
+<p class="alert alert-error" role="alert"><?= e($error) ?></p>
 <?php endif; ?>
 
 <?php if ($canEdit): ?>
 <h2><?= $quiz ? "Đổi tên bài trắc nghiệm" : "Tạo bài trắc nghiệm" ?></h2>
 
-<form method="POST">
+<form method="POST" class="edu-form-card">
 <input type="hidden" name="csrf_token"
  value="<?= e($_SESSION["csrf_token"]) ?>">
 <input type="hidden" name="action" value="create_quiz">
 
-<p>Tên bài trắc nghiệm</p>
-<input type="text" name="title" maxlength="255" required
+<label for="quiz-title">Tên bài trắc nghiệm</label><input id="quiz-title" type="text" name="title" maxlength="255" required
  value="<?= e($quiz["title"] ?? "") ?>">
 
 <button type="submit" class="btn btn-primary">
@@ -315,23 +307,22 @@ if ($quiz) {
 <h2><?= e($quiz["title"]) ?></h2>
 <p>Số câu hỏi: <?= count($questions) ?></p>
 
-<?php foreach ($questions as $index => $q): ?>
-<hr>
+<?php foreach ($questions as $index => $q): ?><section class="edu-question">
 
 <h3>
 Câu <?= $index + 1 ?>:
 <?= e($q["question_text"]) ?>
 </h3>
 
-<p>A. <?= e($q["option_a"]) ?></p>
-<p>B. <?= e($q["option_b"]) ?></p>
-<p>C. <?= e($q["option_c"]) ?></p>
-<p>D. <?= e($q["option_d"]) ?></p>
+<p class="edu-answer"><span class="edu-answer-letter">A</span><?= e($q["option_a"]) ?></p>
+<p class="edu-answer"><span class="edu-answer-letter">B</span><?= e($q["option_b"]) ?></p>
+<p class="edu-answer"><span class="edu-answer-letter">C</span><?= e($q["option_c"]) ?></p>
+<p class="edu-answer"><span class="edu-answer-letter">D</span><?= e($q["option_d"]) ?></p>
 
 <p><strong>Đáp án đúng:</strong>
 <?= e($q["correct_answer"]) ?></p>
 
-<p><strong>Giải thích:</strong>
+<p class="edu-explanation"><strong>Giải thích:</strong>
 <?= nl2br(e($q["explanation"])) ?></p>
 
 <?php if ($canEdit): ?>
@@ -342,9 +333,9 @@ Câu <?= $index + 1 ?>:
 <input type="hidden" name="action" value="delete_question">
 <input type="hidden" name="question_id"
  value="<?= (int)$q["id"] ?>">
-<button type="submit">Xóa câu hỏi</button>
+<button type="submit" class="btn btn-danger">Xóa câu hỏi</button>
 </form>
-<?php endif; ?>
+<?php endif; ?></section>
 
 <?php endforeach; ?>
 
@@ -352,36 +343,29 @@ Câu <?= $index + 1 ?>:
 <hr>
 <h2>Thêm câu hỏi mới</h2>
 
-<form method="POST">
+<form method="POST" class="edu-form-card">
 <input type="hidden" name="csrf_token"
  value="<?= e($_SESSION["csrf_token"]) ?>">
 <input type="hidden" name="action" value="add_question">
 
-<p>Nội dung câu hỏi</p>
-<textarea name="question_text" rows="3" required></textarea>
+<label for="quiz-question_text">Nội dung câu hỏi</label><textarea id="quiz-question_text" name="question_text" rows="3" required></textarea>
 
-<p>Đáp án A</p>
-<input type="text" name="option_a" required>
+<label for="quiz-option_a">Đáp án A</label><input id="quiz-option_a" type="text" name="option_a" required>
 
-<p>Đáp án B</p>
-<input type="text" name="option_b" required>
+<label for="quiz-option_b">Đáp án B</label><input id="quiz-option_b" type="text" name="option_b" required>
 
-<p>Đáp án C</p>
-<input type="text" name="option_c" required>
+<label for="quiz-option_c">Đáp án C</label><input id="quiz-option_c" type="text" name="option_c" required>
 
-<p>Đáp án D</p>
-<input type="text" name="option_d" required>
+<label for="quiz-option_d">Đáp án D</label><input id="quiz-option_d" type="text" name="option_d" required>
 
-<p>Chọn đáp án đúng</p>
-<select name="correct_answer" required>
+<label for="quiz-correct_answer">Chọn đáp án đúng</label><select id="quiz-correct_answer" name="correct_answer" required>
 <option value="A">A</option>
 <option value="B">B</option>
 <option value="C">C</option>
 <option value="D">D</option>
 </select>
 
-<p>Giải thích chi tiết</p>
-<textarea name="explanation" rows="5" required></textarea>
+<label for="quiz-explanation">Giải thích chi tiết</label><textarea id="quiz-explanation" name="explanation" rows="5" required></textarea>
 
 <p>
 <button type="submit" class="btn btn-primary">
@@ -392,12 +376,12 @@ Câu <?= $index + 1 ?>:
 <?php endif; ?>
 
 <hr>
-<h2>Kết quả học viên</h2>
+<h2>Kết quả học sinh</h2>
 
-<table class="data-table">
+<div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
 <thead>
 <tr>
-<th>ID học viên</th>
+<th>ID học sinh</th>
 <th>Số câu đúng</th>
 <th>Điểm</th>
 <th>Ngày làm</th>
@@ -415,10 +399,10 @@ Câu <?= $index + 1 ?>:
 <?php endforeach; ?>
 
 <?php if (!$attempts): ?>
-<tr><td colspan="4">Chưa có học viên làm bài.</td></tr>
+<tr><td colspan="4">Chưa có học sinh làm bài.</td></tr>
 <?php endif; ?>
 </tbody>
-</table>
+</table></div>
 
 <?php endif; ?>
 
@@ -428,6 +412,4 @@ Câu <?= $index + 1 ?>:
 </a>
 </p>
 
-</div>
-</body>
-</html>
+<?php eduEnd(); ?>

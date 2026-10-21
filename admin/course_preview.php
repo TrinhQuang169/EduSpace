@@ -4,7 +4,7 @@ require_once __DIR__ . "/../includes/auth.php";
 
 requireRole("admin");
 
-// Lấy ID khóa học từ URL
+// Lấy ID lớp học từ URL
 $courseId = filter_input(
     INPUT_GET,
     "course_id",
@@ -13,10 +13,10 @@ $courseId = filter_input(
 
 if (!$courseId || $courseId < 1) {
     http_response_code(400);
-    exit("ID khóa học không hợp lệ.");
+    exit("ID lớp học không hợp lệ.");
 }
 
-// Lấy thông tin khóa học
+// Lấy thông tin lớp học
 $stmt = $pdo->prepare(
     "SELECT id, title, status
      FROM courses
@@ -29,10 +29,10 @@ $course = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$course) {
     http_response_code(404);
-    exit("Không tìm thấy khóa học.");
+    exit("Không tìm thấy lớp học.");
 }
 
-// Lấy tất cả bài học thuộc khóa học
+// Lấy tất cả bài học thuộc lớp học
 $stmt = $pdo->prepare(
     "SELECT id, title, content, video_url, lesson_order
      FROM lessons
@@ -77,29 +77,20 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Xem trước khóa học - EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Xem nội dung lớp học', 'courses'); ?>
 
-<div class="container" style="padding: 40px 0;">
 
-    <h1>Xem trước nội dung khóa học</h1>
+
+    <h1>Xem trước nội dung lớp học</h1>
 
     <p>
-        <strong>Tên khóa học:</strong>
+        <strong>Tên lớp học:</strong>
         <?php echo e($course["title"]); ?>
     </p>
 
     <p>
         <strong>Trạng thái:</strong>
-        <?php echo e($course["status"]); ?>
+        <?= eduBadge($course["status"]) ?>
     </p>
 
     <p>
@@ -110,12 +101,12 @@ function e($value) {
     <hr>
 
     <?php if (empty($lessons)): ?>
-        <p>Khóa học chưa có bài học.</p>
+        <p>Lớp học chưa có bài học.</p>
     <?php endif; ?>
 
     <?php foreach ($lessons as $lesson): ?>
 
-        <section style="margin: 30px 0;">
+        <section class="edu-panel">
 
             <h2>
                 Bài <?php echo (int)$lesson["lesson_order"]; ?>:
@@ -195,7 +186,7 @@ function e($value) {
                 <p>Không có tài liệu đính kèm.</p>
             <?php else: ?>
 
-                <table border="1" cellpadding="8">
+                <div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
                     <thead>
                         <tr>
                             <th>Tên tài liệu</th>
@@ -215,11 +206,7 @@ function e($value) {
                                 </td>
 
                                 <td>
-                                    <?php echo e(
-                                        strtoupper(
-                                            $file["file_type"]
-                                        )
-                                    ); ?>
+                                    <?= eduBadge($file["file_type"]) ?>
                                 </td>
 
                                 <td>
@@ -253,7 +240,7 @@ function e($value) {
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
-                </table>
+                </table></div>
 
             <?php endif; ?>
 
@@ -263,13 +250,31 @@ function e($value) {
 
     <?php endforeach; ?>
 
+    <?php if ($course['status'] === 'pending'): ?>
+    <section class="edu-panel">
+        <h2>Phê duyệt nội dung lớp học</h2>
+        <p>Kiểm tra nội dung bài học và tài liệu trước khi đưa ra quyết định.</p>
+        <div class="edu-review-actions">
+            <form action="review_course.php" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn phê duyệt lớp học?');">
+                <input type="hidden" name="csrf_token" value="<?= eduEscape($_SESSION['csrf_token']) ?>">
+                <input type="hidden" name="course_id" value="<?= (int)$course['id'] ?>">
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="btn btn-primary"><?= eduIcon('check') ?>Phê duyệt lớp học</button>
+            </form>
+            <form action="review_course.php" method="POST" onsubmit="return confirm('Bạn chắc chắn muốn từ chối lớp học?');">
+                <input type="hidden" name="csrf_token" value="<?= eduEscape($_SESSION['csrf_token']) ?>">
+                <input type="hidden" name="course_id" value="<?= (int)$course['id'] ?>">
+                <input type="hidden" name="action" value="reject">
+                <button type="submit" class="btn btn-danger">Từ chối</button>
+            </form>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <p style="margin-top: 30px;">
         <a href="courses.php">
-            ← Quay lại quản lý khóa học
+            ← Quay lại quản lý lớp học
         </a>
     </p>
 
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

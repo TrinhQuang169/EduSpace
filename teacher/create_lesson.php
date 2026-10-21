@@ -3,7 +3,7 @@
 require_once __DIR__ . "/../includes/auth.php";
 requireRole("teacher");
 
-// Lấy ID khóa học từ URL
+// Lấy ID lớp học từ URL
 $courseId = filter_input(
     INPUT_GET,
     "course_id",
@@ -12,12 +12,12 @@ $courseId = filter_input(
 
 if (!$courseId || $courseId < 1) {
     http_response_code(400);
-    exit("ID khóa học không hợp lệ.");
+    exit("ID lớp học không hợp lệ.");
 }
 
 $teacherId = (int)$_SESSION["user_id"];
 
-// Kiểm tra khóa học có thuộc giảng viên không
+// Kiểm tra lớp học có thuộc giáo viên không
 $stmt = $pdo->prepare(
     "SELECT id, title, status
      FROM courses
@@ -30,13 +30,13 @@ $course = $stmt->fetch();
 
 if (!$course) {
     http_response_code(404);
-    exit("Không tìm thấy khóa học của bạn.");
+    exit("Không tìm thấy lớp học của bạn.");
 }
 
 // Chỉ cho thêm bài học trước khi được phê duyệt
 if (!in_array($course["status"], ["draft", "rejected"], true)) {
     http_response_code(403);
-    exit("Khóa học đang chờ duyệt hoặc đã duyệt, không thể thêm bài học.");
+    exit("Lớp học đang chờ duyệt hoặc đã duyệt, không thể thêm bài học.");
 }
 
 if (empty($_SESSION["csrf_token"])) {
@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     } else {
         // Kiểm tra lại trạng thái trong lúc ghi dữ liệu
-        // và khóa bản ghi khóa học trong giao dịch
+        // và khóa bản ghi lớp học trong giao dịch
         try {
             $pdo->beginTransaction();
 
@@ -127,7 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ) {
                 $pdo->rollBack();
                 http_response_code(409);
-                exit("Trạng thái khóa học đã thay đổi.");
+                exit("Trạng thái lớp học đã thay đổi.");
             }
 
             $insert = $pdo->prepare(
@@ -174,24 +174,15 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Thêm bài học - EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body class="auth-page">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Thêm bài học', 'courses'); ?>
 
-<div class="auth-container">
-    <div class="auth-card">
+
+    <div class="edu-form-card">
 
         <h1>Thêm bài học mới</h1>
 
         <p class="auth-subtitle">
-            Khóa học:
+            Lớp học:
             <?php echo e($course["title"]); ?>
         </p>
 
@@ -210,8 +201,8 @@ function e($value) {
             >
 
             <div class="form-group">
-                <label>Tên bài học</label>
-                <input
+                <label for="field-title">Tên bài học</label>
+<input id="field-title"
                     type="text"
                     name="title"
                     maxlength="255"
@@ -222,8 +213,8 @@ function e($value) {
             </div>
 
             <div class="form-group">
-                <label>Nội dung bài học</label>
-                <textarea
+                <label for="field-content">Nội dung bài học</label>
+<textarea id="field-content"
                     name="content"
                     rows="8"
                     placeholder="Nhập nội dung bài học..."
@@ -231,8 +222,8 @@ function e($value) {
             </div>
 
             <div class="form-group">
-                <label>Link video YouTube (nếu có)</label>
-                <input
+                <label for="field-video_url">Link video YouTube (nếu có)</label>
+<input id="field-video_url"
                     type="url"
                     name="video_url"
                     maxlength="500"
@@ -242,8 +233,8 @@ function e($value) {
             </div>
 
             <div class="form-group">
-                <label>Thứ tự bài học</label>
-                <input
+                <label for="field-lesson_order">Thứ tự bài học</label>
+<input id="field-lesson_order"
                     type="number"
                     name="lesson_order"
                     min="1"
@@ -267,7 +258,4 @@ function e($value) {
         </p>
 
     </div>
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

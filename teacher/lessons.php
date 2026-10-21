@@ -15,12 +15,12 @@ $courseId = filter_input(
 
 if (!$courseId || $courseId < 1) {
     http_response_code(400);
-    exit("ID khóa học không hợp lệ.");
+    exit("ID lớp học không hợp lệ.");
 }
 
 $teacherId = (int)$_SESSION["user_id"];
 
-// Kiểm tra khóa học thuộc giảng viên
+// Kiểm tra lớp học thuộc giáo viên
 $stmt = $pdo->prepare(
     "SELECT id, title, status
      FROM courses
@@ -33,7 +33,7 @@ $course = $stmt->fetch();
 
 if (!$course) {
     http_response_code(404);
-    exit("Không tìm thấy khóa học của bạn.");
+    exit("Không tìm thấy lớp học của bạn.");
 }
 
 // Lấy danh sách bài học
@@ -71,20 +71,11 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Danh sách bài học - EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Quản lý bài học', 'courses'); ?>
 
-<div class="container" style="padding: 50px 0;">
 
-    <h1>📚 Bài học của khóa học</h1>
+
+    <h1>Bài học của lớp học</h1>
 
     <h2><?php echo e($course["title"]); ?></h2>
 
@@ -105,13 +96,12 @@ function e($value) {
         </p>
     <?php else: ?>
         <p>
-            Khóa học đang chờ duyệt hoặc đã duyệt.
+            Lớp học đang chờ duyệt hoặc đã duyệt.
             Không thể thêm bài học.
         </p>
     <?php endif; ?>
 
-    <div style="overflow-x: auto;">
-        <table class="data-table">
+    <div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
 
             <thead>
                 <tr>
@@ -217,22 +207,18 @@ function e($value) {
                 <?php if (empty($lessons)): ?>
                     <tr>
                         <td colspan="4">
-                            Khóa học chưa có bài học nào.
+                            Lớp học chưa có bài học nào.
                         </td>
                     </tr>
                 <?php endif; ?>
             </tbody>
 
-        </table>
-    </div>
+        </table></div>
 
     <p style="margin-top: 25px;">
         <a href="courses.php">
-            ← Quay lại danh sách khóa học
+            ← Quay lại danh sách lớp học
         </a>
     </p>
 
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

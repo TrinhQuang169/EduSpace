@@ -7,7 +7,7 @@ if (empty($_SESSION["csrf_token"])) {
     $_SESSION["csrf_token"] = bin2hex(random_bytes(32));
 }
 
-// Lấy toàn bộ khóa học, ưu tiên khóa chờ duyệt
+// Lấy toàn bộ lớp học, ưu tiên khóa chờ duyệt
 $sql = "SELECT id, title, description, category,
                teacher_name, status, created_at
         FROM courses
@@ -27,8 +27,8 @@ $statusNames = [
 ];
 
 $messages = [
-    "approved" => "Đã phê duyệt khóa học thành công.",
-    "rejected" => "Đã từ chối khóa học."
+    "approved" => "Đã phê duyệt lớp học thành công.",
+    "rejected" => "Đã từ chối lớp học."
 ];
 
 $messageKey = $_GET["message"] ?? "";
@@ -43,39 +43,33 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Quản lý khóa học - Admin EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Quản lý lớp học', 'courses'); ?>
 
-<body>
 
-<div class="container" style="padding: 50px 0;">
 
-    <h1>🛡️ Quản lý khóa học - Admin</h1>
+    <h1>Quản lý lớp học - Admin</h1>
 
     <p style="margin: 15px 0 25px;">
-        Xem và phê duyệt các khóa học do giảng viên gửi lên.
+        Xem và phê duyệt các lớp học do giáo viên gửi lên.
     </p>
 
-    <?php if ($message !== ""): ?>
+    <div class="edu-stats">
+<?php eduStat(count($courses), 'Tổng lớp học', 'book', 'blue');
+eduStat(count(array_filter($courses, static fn($item) => $item['status'] === 'draft')), 'Bản nháp', 'file', 'purple');
+eduStat(count(array_filter($courses, static fn($item) => $item['status'] === 'pending')), 'Chờ duyệt', 'clock', 'orange');
+eduStat(count(array_filter($courses, static fn($item) => $item['status'] === 'approved')), 'Đã duyệt', 'check', 'green'); ?>
+</div><?php if ($message !== ""): ?>
         <div class="alert alert-success">
             <?php echo e($message); ?>
         </div>
     <?php endif; ?>
 
-    <div style="overflow-x: auto;">
-        <table class="data-table">
+    <div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Tên khóa học</th>
-                    <th>Giảng viên</th>
+                    <th>Tên lớp học</th>
+                    <th>Giáo viên</th>
                     <th>Danh mục</th>
                     <th>Mô tả</th>
                     <th>Trạng thái</th>
@@ -100,10 +94,7 @@ function e($value) {
                             $course["description"] ?? ""
                         )); ?></td>
 
-                        <td><?php echo e(
-                            $statusNames[$course["status"]]
-                            ?? $course["status"]
-                        ); ?></td>
+                        <td><?= eduBadge($course["status"]) ?></td>
 
                         
 <td>
@@ -122,7 +113,7 @@ function e($value) {
                                     method="POST"
                                     style="display:inline-block;"
                                     onsubmit="return confirm(
-                                        'Bạn chắc chắn muốn phê duyệt khóa học?'
+                                        'Bạn chắc chắn muốn phê duyệt lớp học?'
                                     );"
                                 >
                                     <input
@@ -158,7 +149,7 @@ function e($value) {
                                     method="POST"
                                     style="display:inline-block;"
                                     onsubmit="return confirm(
-                                        'Bạn chắc chắn muốn từ chối khóa học?'
+                                        'Bạn chắc chắn muốn từ chối lớp học?'
                                     );"
                                 >
                                     <input
@@ -199,13 +190,12 @@ function e($value) {
                 <?php if (empty($courses)): ?>
                     <tr>
                         <td colspan="7">
-                            Chưa có khóa học nào.
+                            Chưa có lớp học nào.
                         </td>
                     </tr>
                 <?php endif; ?>
             </tbody>
-        </table>
-    </div>
+        </table></div>
 
     <p style="margin-top: 25px;">
         <a href="../dashboards/admin.php">
@@ -213,7 +203,4 @@ function e($value) {
         </a>
     </p>
 
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

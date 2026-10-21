@@ -3,7 +3,7 @@
 require_once __DIR__ . "/../includes/auth.php";
 require_once __DIR__ . "/../config/storage.php";
 
-// Chỉ học viên được truy cập
+// Chỉ học sinh được truy cập
 requireRole("student");
 
 // 1. Nhận ID tài liệu
@@ -23,8 +23,8 @@ $studentId = (int)$_SESSION["user_id"];
 // 2. Kiểm tra quyền truy cập bằng MySQL
 // Bắt buộc:
 // - Tài liệu thuộc một bài học
-// - Bài học thuộc khóa học approved
-// - Học viên đã đăng ký đúng khóa học đó
+// - Bài học thuộc lớp học approved
+// - Học sinh đã đăng ký đúng lớp học đó
 $stmt = $pdo->prepare(
     "SELECT
         m.id,
@@ -50,7 +50,7 @@ $material = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$material) {
     http_response_code(403);
     exit(
-        "Bạn chưa đăng ký khóa học này " .
+        "Bạn chưa tham gia lớp học này " .
         "hoặc không có quyền truy cập tài liệu."
     );
 }

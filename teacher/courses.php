@@ -2,6 +2,8 @@
 <?php
 require_once __DIR__ . "/../includes/auth.php";
 requireRole("teacher");
+require_once __DIR__ . '/../includes/classes.php';
+$classesReady = eduPrepareClasses($pdo);
 
 $teacherId = (int)$_SESSION["user_id"];
 
@@ -10,7 +12,7 @@ if (empty($_SESSION["csrf_token"])) {
 }
 
 $stmt = $pdo->prepare(
-    "SELECT id, title, category, status, created_at
+    "SELECT id, title, category, status, created_at" . ($classesReady ? ", class_code" : ", NULL AS class_code") . "
      FROM courses
      WHERE teacher_id = ?
      ORDER BY id DESC"
@@ -28,9 +30,9 @@ $statusNames = [
 
 
 $messages = [
-    "updated" => "Đã cập nhật khóa học thành công.",
-    "submitted" => "Đã gửi khóa học cho Admin phê duyệt.",
-    "deleted" => "Đã xóa khóa học bản nháp thành công."
+    "updated" => "Đã cập nhật lớp học thành công.",
+    "submitted" => "Đã gửi lớp học cho Admin phê duyệt.",
+    "deleted" => "Đã xóa lớp học bản nháp thành công."
 ];
 
 
@@ -46,26 +48,22 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Khóa học của tôi - EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Lớp học của tôi', 'courses'); ?>
 
-<div class="container" style="padding: 50px 0;">
 
-    <h1>📚 Khóa học của tôi</h1>
+
+    <h1>Lớp học của tôi</h1><?php if (!$classesReady): ?><div class="alert alert-error"><?= e(eduClassMigrationMessage()) ?></div><?php endif; ?>
 
     <p style="margin: 15px 0 25px;">
-        Quản lý các khóa học bạn đã tạo.
+        Quản lý các lớp học bạn đã tạo.
     </p>
 
-    <?php if ($message !== ""): ?>
+    <div class="edu-stats">
+<?php eduStat(count($courses), 'Tổng lớp học', 'book', 'blue');
+eduStat(count(array_filter($courses, static fn($item) => $item['status'] === 'draft')), 'Bản nháp', 'file', 'purple');
+eduStat(count(array_filter($courses, static fn($item) => $item['status'] === 'pending')), 'Chờ duyệt', 'clock', 'orange');
+eduStat(count(array_filter($courses, static fn($item) => $item['status'] === 'approved')), 'Đã duyệt', 'check', 'green'); ?>
+</div><?php if ($message !== ""): ?>
         <div class="alert alert-success">
             <?php echo e($message); ?>
         </div>
@@ -73,15 +71,14 @@ function e($value) {
 
     <a href="create_course.php"
        class="btn btn-primary">
-        + Tạo khóa học mới
+        + Tạo lớp học mới
     </a>
 
-    <div style="margin-top: 30px; overflow-x: auto;">
-        <table class="data-table">
+    <div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Tên khóa học</th>
+                    <th>Tên lớp học</th><th>Mã tham gia</th>
                     <th>Danh mục</th>
                     <th>Trạng thái</th>
                     <th>Ngày tạo</th>
@@ -103,15 +100,12 @@ function e($value) {
                     <tr>
                         <td><?php echo (int)$course["id"]; ?></td>
 
-                        <td><?php echo e($course["title"]); ?></td>
+                        <td><?php echo e($course["title"]); ?></td><td><code class="edu-class-code"><?= e($course["class_code"] ?? "Chưa sẵn sàng") ?></code></td>
 
                         <td><?php echo e($course["category"]); ?></td>
 
                         <td>
-                            <?php echo e(
-                                $statusNames[$course["status"]]
-                                ?? $course["status"]
-                            ); ?>
+                            <?= eduBadge($course["status"]) ?>
                         </td>
 
                         <td><?php echo e($course["created_at"]); ?></td>
@@ -125,6 +119,7 @@ function e($value) {
                         Bài học
                         </a>
 
+                            <a class="btn btn-primary" href="members.php?course_id=<?= (int)$course["id"] ?>">Thành viên</a>
                             <?php if ($canEdit): ?>
 
                                 <a
@@ -141,7 +136,7 @@ function e($value) {
                                     action="submit_course.php"
                                     style="display: inline-block;"
                                     onsubmit="return confirm(
-                                        'Bạn chắc chắn muốn gửi duyệt khóa học này?'
+                                        'Bạn chắc chắn muốn gửi duyệt lớp học này?'
                                     );"
                                 >
                                     <input
@@ -181,14 +176,13 @@ function e($value) {
 
                 <?php if (empty($courses)): ?>
                     <tr>
-                        <td colspan="6">
-                            Bạn chưa tạo khóa học nào.
+                        <td colspan="7">
+                            Bạn chưa tạo lớp học nào.
                         </td>
                     </tr>
                 <?php endif; ?>
             </tbody>
-        </table>
-    </div>
+        </table></div>
 
     <p style="margin-top: 25px;">
         <a href="../dashboards/teacher.php">
@@ -196,7 +190,4 @@ function e($value) {
         </a>
     </p>
 
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

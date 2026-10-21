@@ -24,7 +24,7 @@ if (
     exit("Yêu cầu không hợp lệ.");
 }
 
-// 3. Kiểm tra ID khóa học
+// 3. Kiểm tra ID lớp học
 $courseId = filter_input(
     INPUT_POST,
     "course_id",
@@ -33,7 +33,7 @@ $courseId = filter_input(
 
 if (!$courseId || $courseId < 1) {
     http_response_code(400);
-    exit("ID khóa học không hợp lệ.");
+    exit("ID lớp học không hợp lệ.");
 }
 
 $teacherId = (int)$_SESSION["user_id"];
@@ -42,7 +42,7 @@ try {
     // 4. Bắt đầu transaction
     $pdo->beginTransaction();
 
-    // 5. Khóa và kiểm tra khóa học thuộc giảng viên
+    // 5. Khóa và kiểm tra lớp học thuộc giáo viên
     $stmt = $pdo->prepare(
         "SELECT id, status
          FROM courses
@@ -58,7 +58,7 @@ try {
         $pdo->rollBack();
 
         http_response_code(404);
-        exit("Không tìm thấy khóa học của bạn.");
+        exit("Không tìm thấy lớp học của bạn.");
     }
 
     // 6. Chỉ draft/rejected mới được gửi duyệt
@@ -72,11 +72,11 @@ try {
         http_response_code(409);
         exit(
             "Không thể gửi duyệt. " .
-            "Khóa học đang chờ duyệt hoặc đã được duyệt."
+            "Lớp học đang chờ duyệt hoặc đã được duyệt."
         );
     }
 
-    // 7. KIỂM TRA NỘI DUNG KHÓA HỌC
+    // 7. KIỂM TRA NỘI DUNG LỚP HỌC
     $result = validateCourseContent($pdo, $courseId);
 
     if (!$result["ok"]) {
@@ -107,14 +107,14 @@ try {
 
     if ($update->rowCount() !== 1) {
         throw new RuntimeException(
-            "Không thể cập nhật trạng thái khóa học."
+            "Không thể cập nhật trạng thái lớp học."
         );
     }
 
     // 9. Lưu thay đổi
     $pdo->commit();
 
-    // 10. Trở về danh sách khóa học
+    // 10. Trở về danh sách lớp học
     header("Location: courses.php?message=submitted");
     exit;
 
@@ -127,5 +127,5 @@ try {
     error_log($e->getMessage());
 
     http_response_code(500);
-    exit("Có lỗi khi gửi duyệt khóa học. Vui lòng thử lại.");
+    exit("Có lỗi khi gửi duyệt lớp học. Vui lòng thử lại.");
 }

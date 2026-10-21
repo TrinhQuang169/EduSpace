@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     try {
         $pdo->beginTransaction();
 
-        // Xác định đúng khóa học và kiểm tra quyền
+        // Xác định đúng lớp học và kiểm tra quyền
         $stmt = $pdo->prepare(
             "SELECT c.id, c.status
              FROM lessons l
@@ -90,10 +90,10 @@ $courseId = filter_input(
 
 if (!$courseId) {
     http_response_code(400);
-    exit("ID khóa học không hợp lệ.");
+    exit("ID lớp học không hợp lệ.");
 }
 
-// Chỉ xem tiến độ khóa học mình đã đăng ký
+// Chỉ xem tiến độ lớp học mình đã đăng ký
 $stmt = $pdo->prepare(
     "SELECT c.id, c.title
      FROM courses c
@@ -107,7 +107,7 @@ $course = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$course) {
     http_response_code(403);
-    exit("Bạn không có quyền xem tiến độ khóa học.");
+    exit("Bạn không có quyền xem tiến độ lớp học.");
 }
 
 // Lấy bài học, trạng thái hoàn thành và điểm quiz
@@ -158,34 +158,19 @@ $average = $quizDone > 0
     ? round($scoreSum / $quizDone, 2)
     : null;
 ?>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Tiến độ học tập - EduSpace</title>
-<link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
-<div class="container" style="padding:40px 0">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Tiến độ học tập', 'my-courses'); ?>
+
 
 <h1>Tiến độ học tập</h1>
 <h2><?= e($course["title"]) ?></h2>
 
-<p>Đã hoàn thành: <strong>
-<?= $completed ?>/<?= $total ?> bài học
-</strong></p>
-
-<p>Tiến độ: <strong><?= $percent ?>%</strong></p>
-
-<p>Số bài trắc nghiệm đã làm:
-<strong><?= $quizDone ?></strong></p>
-
-<p>Điểm trắc nghiệm trung bình:
-<strong>
-<?= $average === null ? "Chưa có" : $average . "/10" ?>
-</strong></p>
-
-<table class="data-table">
+<div class="edu-stats">
+<?php eduStat($completed . '/' . $total, 'Bài học hoàn thành', 'check', 'green');
+eduStat($percent . '%', 'Tiến độ lớp học', 'chart', 'blue');
+eduStat($quizDone, 'Trắc nghiệm đã làm', 'file', 'purple');
+eduStat($average === null ? '—' : $average . '/10', 'Điểm trung bình', 'award', 'orange'); ?>
+</div>
+<div class="edu-panel"><h2>Hành trình của bạn</h2><p>Đã hoàn thành <?= $completed ?> trong tổng số <?= $total ?> bài học.</p><progress class="edu-progress" value="<?= $percent ?>" max="100" aria-label="Tiến độ học tập"><?= $percent ?>%</progress></div><div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
 <thead>
 <tr>
 <th>Thứ tự</th>
@@ -202,9 +187,7 @@ $average = $quizDone > 0
 <td><?= e($lesson["title"]) ?></td>
 
 <td>
-<?= $lesson["completed_at"] !== null
-    ? "Đã hoàn thành"
-    : "Chưa hoàn thành" ?>
+<?= eduBadge($lesson["completed_at"] !== null ? "complete" : "incomplete") ?>
 </td>
 
 <td>
@@ -235,14 +218,12 @@ $average = $quizDone > 0
 <tr><td colspan="5">Chưa có bài học.</td></tr>
 <?php endif; ?>
 </tbody>
-</table>
+</table></div>
 
 <p style="margin-top:25px">
 <a href="course.php?course_id=<?= $courseId ?>">
- ← Quay lại khóa học
+ ← Quay lại lớp học
 </a>
 </p>
 
-</div>
-</body>
-</html>
+<?php eduEnd(); ?>

@@ -68,6 +68,8 @@ function requireLogin() {
         exit;
     }
 
+    header('Cache-Control: private, no-store');
+
     $_SESSION["user_name"] = $user["full_name"];
     $_SESSION["user_email"] = $user["email"];
     $_SESSION["user_role"] = $user["role"];

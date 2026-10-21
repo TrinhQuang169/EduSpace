@@ -42,8 +42,22 @@ Hoặc vào GitHub, chọn **Code → Download ZIP**, giải nén và đổi tê
 3. Đặt tên database là `online_learning`.
 4. Chọn database vừa tạo.
 5. Chọn tab **Import**.
-6. Chọn file `database/online_learning.sql`.
+6. Chọn file `database/online_learning (1).sql`.
 7. Nhấn **Import** hoặc **Go** để hoàn tất.
+
+### Nâng cấp tính năng lớp học và mã tham gia
+
+Với database hiện có, **không import lại bản SQL đầy đủ**. Chỉ thực hiện:
+
+1. Mở phpMyAdmin và chọn database `online_learning`.
+2. Vào **Import**, chọn `database/20261013_class_membership.sql`, rồi nhấn **Go**.
+3. Mở lại danh sách lớp học trong EduSpace. PHP tự sinh mã bằng `random_bytes()` cho tất cả lớp cũ chưa có mã; mã đã cấp được giữ nguyên.
+
+Giáo viên xem mã và quản lý thành viên tại **Lớp học của tôi → Thành viên**. Học sinh chọn **Tham gia lớp học** rồi nhập mã giáo viên cung cấp. Mỗi tài khoản được nhập sai tối đa 5 lần trong 15 phút, tính chung giữa các lớp và các phiên đăng nhập.
+
+Migration chỉ thêm `courses.class_code` với UNIQUE INDEX và bảng `class_join_attempts`. Không xóa dữ liệu, đổi tên bảng hoặc thay đổi URL. MariaDB 10.4 không có hàm SQL `RANDOM_BYTES()`, nên bước cấp mã cho lớp cũ được thực hiện an toàn bằng PHP khi mở danh sách lớp. Nếu chưa chạy migration, ứng dụng thông báo rõ và không cho tạo/tham gia lớp qua luồng cũ.
+
+Chi tiết triển khai và kiểm thử: [docs/CLASS-MEMBERSHIP.md](docs/CLASS-MEMBERSHIP.md).
 
 ## 6. Cấu hình kết nối MySQL
 

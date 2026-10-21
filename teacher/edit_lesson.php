@@ -16,7 +16,7 @@ if (!$lessonId || $lessonId < 1) {
 
 $teacherId = (int)$_SESSION["user_id"];
 
-// Lấy bài học thuộc khóa học của giảng viên
+// Lấy bài học thuộc lớp học của giáo viên
 $stmt = $pdo->prepare(
     "SELECT l.*, c.title AS course_title, c.status
      FROM lessons l
@@ -39,7 +39,7 @@ if (!in_array(
     true
 )) {
     http_response_code(403);
-    exit("Khóa học đang chờ duyệt hoặc đã duyệt.");
+    exit("Lớp học đang chờ duyệt hoặc đã duyệt.");
 }
 
 $courseId = (int)$lesson["course_id"];
@@ -121,7 +121,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             )) {
                 $pdo->rollBack();
                 http_response_code(409);
-                exit("Khóa học đã thay đổi trạng thái.");
+                exit("Lớp học đã thay đổi trạng thái.");
             }
 
             $update = $pdo->prepare(
@@ -170,24 +170,15 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Sửa bài học - EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body class="auth-page">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Chỉnh sửa bài học', 'courses'); ?>
 
-<div class="auth-container">
-    <div class="auth-card">
+
+    <div class="edu-form-card">
 
         <h1>Chỉnh sửa bài học</h1>
 
         <p class="auth-subtitle">
-            Khóa học:
+            Lớp học:
             <?php echo e($lesson["course_title"]); ?>
         </p>
 
@@ -268,7 +259,4 @@ function e($value) {
         </p>
 
     </div>
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

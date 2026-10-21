@@ -19,7 +19,7 @@ if (!$lessonId || $lessonId < 1) {
 
 $teacherId = (int)$_SESSION["user_id"];
 
-// 2. Kiểm tra bài học thuộc giảng viên đang đăng nhập
+// 2. Kiểm tra bài học thuộc giáo viên đang đăng nhập
 $stmt = $pdo->prepare(
     "SELECT
         l.id,
@@ -66,7 +66,7 @@ $messages = [
 $messageKey = $_GET["message"] ?? "";
 $success = $messages[$messageKey] ?? "";
 
-// 4. Xử lý khi giảng viên nhấn Tải lên
+// 4. Xử lý khi giáo viên nhấn Tải lên
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $token = $_POST["csrf_token"] ?? "";
@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (!$canUpload) {
         http_response_code(403);
-        exit("Khóa học này không được phép thêm tài liệu.");
+        exit("Lớp học này không được phép thêm tài liệu.");
     }
 
     // Chuyển $_FILES thành danh sách dễ xử lý
@@ -246,7 +246,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         try {
             $pdo->beginTransaction();
 
-            // Khóa bản ghi khóa học để kiểm tra trạng thái
+            // Khóa bản ghi lớp học để kiểm tra trạng thái
             $check = $pdo->prepare(
                 "SELECT status
                  FROM courses
@@ -266,7 +266,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 )
             ) {
                 throw new RuntimeException(
-                    "Khóa học đã thay đổi trạng thái."
+                    "Lớp học đã thay đổi trạng thái."
                 );
             }
 
@@ -388,26 +388,14 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Tài liệu bài học - EduSpace</title>
-    <link
-        rel="stylesheet"
-        href="../assets/css/style.css"
-    >
-</head>
-<body>
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Tài liệu bài học', 'courses'); ?>
 
-<div class="container" style="padding: 40px 0;">
+
 
     <h1>Quản lý tài liệu bài học</h1>
 
     <p>
-        <strong>Khóa học:</strong>
+        <strong>Lớp học:</strong>
         <?php echo e($lesson["course_title"]); ?>
     </p>
 
@@ -436,7 +424,7 @@ function e($value) {
 
         <form
             method="POST"
-            enctype="multipart/form-data"
+            enctype="multipart/form-data" class="edu-form-card"
         >
 
             <input
@@ -480,7 +468,7 @@ function e($value) {
     <?php else: ?>
 
         <p>
-            Khóa học đang chờ duyệt hoặc đã duyệt.
+            Lớp học đang chờ duyệt hoặc đã duyệt.
             Bạn chỉ có thể xem danh sách tài liệu.
         </p>
 
@@ -490,8 +478,7 @@ function e($value) {
         Tài liệu đã tải lên
     </h2>
 
-    <div style="overflow-x: auto;">
-        <table class="data-table">
+    <div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -516,9 +503,7 @@ function e($value) {
                         </td>
 
                         <td>
-                            <?php echo e(
-                                strtoupper($material["file_type"])
-                            ); ?>
+                            <?= eduBadge($material["file_type"]) ?>
                         </td>
 
                         <td>
@@ -577,7 +562,7 @@ function e($value) {
                 value="<?php echo $lessonId; ?>"
             >
 
-            <button type="submit">
+            <button type="submit" class="btn btn-danger">
                 Xóa
             </button>
         </form>
@@ -595,8 +580,7 @@ function e($value) {
                     </tr>
                 <?php endif; ?>
             </tbody>
-        </table>
-    </div>
+        </table></div>
 
     <p style="margin-top: 25px;">
         <a href="lessons.php?course_id=<?php
@@ -606,6 +590,4 @@ function e($value) {
         </a>
     </p>
 
-</div>
-</body>
-</html>
+<?php eduEnd(); ?>

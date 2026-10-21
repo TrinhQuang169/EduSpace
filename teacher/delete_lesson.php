@@ -43,7 +43,7 @@ $teacherId = (int)$_SESSION["user_id"];
 try {
     $pdo->beginTransaction();
 
-    // Khóa khóa học để bảo đảm chưa được gửi duyệt
+    // Khóa lớp học để bảo đảm chưa được gửi duyệt
     $check = $pdo->prepare(
         "SELECT status
          FROM courses

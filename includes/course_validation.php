@@ -2,17 +2,17 @@
 <?php
 
 /**
- * Kiểm tra nội dung khóa học trước khi gửi duyệt.
+ * Kiểm tra nội dung lớp học trước khi gửi duyệt.
  *
  * Kết quả:
  * - ok: true/false
- * - message: thông báo cho giảng viên
+ * - message: thông báo cho giáo viên
  *
  * Hàm chỉ kiểm tra, không thay đổi dữ liệu.
  */
 function validateCourseContent(PDO $pdo, int $courseId): array
 {
-    // 1. Lấy toàn bộ bài học của khóa học
+    // 1. Lấy toàn bộ bài học của lớp học
     $stmt = $pdo->prepare(
         "SELECT id, title, content, video_url
          FROM lessons
@@ -23,11 +23,11 @@ function validateCourseContent(PDO $pdo, int $courseId): array
     $stmt->execute([$courseId]);
     $lessons = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 2. Khóa học phải có ít nhất 1 bài học
+    // 2. Lớp học phải có ít nhất 1 bài học
     if (count($lessons) === 0) {
         return [
             "ok" => false,
-            "message" => "Khóa học phải có ít nhất một bài học trước khi gửi duyệt."
+            "message" => "Lớp học phải có ít nhất một bài học trước khi gửi duyệt."
         ];
     }
 
@@ -74,6 +74,6 @@ function validateCourseContent(PDO $pdo, int $courseId): array
     // 4. Tất cả bài học đạt yêu cầu
     return [
         "ok" => true,
-        "message" => "Nội dung khóa học hợp lệ."
+        "message" => "Nội dung lớp học hợp lệ."
     ];
 }

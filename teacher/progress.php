@@ -37,7 +37,7 @@ if ($courseId) {
 
     if (!$selectedCourse) {
         http_response_code(404);
-        exit("Không tìm thấy khóa học của bạn.");
+        exit("Không tìm thấy lớp học của bạn.");
     }
 
     $stmt = $pdo->prepare(
@@ -82,25 +82,18 @@ if ($courseId) {
     $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Tiến độ học viên - EduSpace</title>
-<link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
-<div class="container" style="padding:40px 0">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Tiến độ & kết quả', 'progress'); ?>
 
-<h1>Theo dõi tiến độ học viên</h1>
 
-<h2>Khóa học của tôi</h2>
+<h1>Theo dõi tiến độ học sinh</h1>
 
-<table class="data-table">
+<p>Chọn lớp học để theo dõi mức độ hoàn thành và kết quả trắc nghiệm của học sinh.</p><h2>Lớp học của tôi</h2>
+
+<div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
 <thead>
 <tr>
 <th>ID</th>
-<th>Tên khóa học</th>
+<th>Tên lớp học</th>
 <th>Trạng thái</th>
 <th>Thao tác</th>
 </tr>
@@ -110,27 +103,26 @@ if ($courseId) {
 <tr>
 <td><?= (int)$course["id"] ?></td>
 <td><?= e($course["title"]) ?></td>
-<td><?= e($course["status"]) ?></td>
+<td><?= eduBadge($course["status"]) ?></td>
 <td>
 <a href="progress.php?course_id=<?= (int)$course["id"] ?>">
  Xem tiến độ
 </a>
 </td>
 </tr>
-<?php endforeach; ?>
-</tbody>
-</table>
+<?php endforeach; ?><?php if (!$courses): ?><tr><td colspan="4">Bạn chưa có lớp học nào. Hãy tạo lớp học để bắt đầu.</td></tr><?php endif; ?></tbody>
+</table></div>
 
 <?php if ($selectedCourse): ?>
 <hr>
-<h2>Học viên khóa: <?= e($selectedCourse["title"]) ?></h2>
-<p>Số học viên: <?= count($students) ?></p>
+<h2>Học sinh lớp: <?= e($selectedCourse["title"]) ?></h2>
+<p>Số học sinh: <?= count($students) ?></p>
 
-<table class="data-table">
+<div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
 <thead>
 <tr>
-<th>ID học viên</th>
-<th>Ngày đăng ký</th>
+<th>ID học sinh</th>
+<th>Ngày tham gia</th>
 <th>Hoàn thành</th>
 <th>Tiến độ</th>
 <th>Số trắc nghiệm đã làm</th>
@@ -150,7 +142,7 @@ $percent = $total > 0
 <td><?= (int)$student["student_id"] ?></td>
 <td><?= e($student["enrolled_at"]) ?></td>
 <td><?= $completed ?>/<?= $total ?></td>
-<td><?= $percent ?>%</td>
+<td class="edu-progress-cell"><?= $percent ?>%<progress class="edu-progress" value="<?= $percent ?>" max="100" aria-label="Tiến độ học sinh"><?= $percent ?>%</progress></td>
 <td><?= (int)$student["completed_quizzes"] ?></td>
 <td>
 <?= $student["average_score"] === null
@@ -161,17 +153,15 @@ $percent = $total > 0
 <?php endforeach; ?>
 
 <?php if (!$students): ?>
-<tr><td colspan="6">Chưa có học viên đăng ký.</td></tr>
+<tr><td colspan="6">Chưa có học sinh đăng ký.</td></tr>
 <?php endif; ?>
 </tbody>
-</table>
+</table></div>
 <?php endif; ?>
 
 <p style="margin-top:25px">
 <a href="../dashboards/teacher.php">
- ← Quay lại Dashboard giảng viên
+ ← Quay lại Dashboard giáo viên
 </a>
 </p>
-</div>
-</body>
-</html>
+<?php eduEnd(); ?>

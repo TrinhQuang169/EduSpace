@@ -2,13 +2,13 @@
 <?php
 require_once __DIR__ . "/../includes/auth.php";
 
-// Chỉ học viên được truy cập
+// Chỉ học sinh được truy cập
 requireRole("student");
 
-// Lấy ID học viên từ Session
+// Lấy ID học sinh từ Session
 $studentId = (int)$_SESSION["user_id"];
 
-// Lấy các khóa học mà học viên đã đăng ký
+// Lấy các lớp học mà học sinh đã đăng ký
 $stmt = $pdo->prepare(
     "SELECT
         c.id,
@@ -28,7 +28,7 @@ $stmt = $pdo->prepare(
 $stmt->execute([$studentId]);
 $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Đếm số khóa học
+// Đếm số lớp học
 $totalCourses = count($courses);
 
 // Hàm hiển thị dữ liệu an toàn
@@ -41,125 +41,45 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Lớp học của tôi', 'my-courses'); ?>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
 
-    <title>Khóa học của tôi - EduSpace</title>
 
-    <link
-        rel="stylesheet"
-        href="../assets/css/style.css"
-    >
-</head>
-
-<body>
-
-<div class="container" style="padding: 40px 0;">
-
-    <h1>Khóa học của tôi</h1>
+    <h1>Lớp học của tôi</h1>
 
     <p>
-        Tổng số khóa học đã đăng ký và đang được phê duyệt:
+        Lớp học đã tham gia và hiện được phê duyệt:
         <strong><?php echo $totalCourses; ?></strong>
     </p>
 
-    <div style="overflow-x:auto;">
-
-        <table class="data-table">
-
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Tên khóa học</th>
-                    <th>Giảng viên</th>
-                    <th>Danh mục</th>
-                    <th>Ngày đăng ký</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                <?php foreach ($courses as $course): ?>
-
-                    <tr>
-
-                        <td>
-                            <?php echo (int)$course["id"]; ?>
-                        </td>
-
-                        <td>
-                            <?php echo e($course["title"]); ?>
-                        </td>
-
-                        <td>
-                            <?php echo e(
-                                $course["teacher_name"] ??
-                                "Chưa xác định"
-                            ); ?>
-                        </td>
-
-                        <td>
-                            <?php echo e(
-                                $course["category"]
-                            ); ?>
-                        </td>
-
-                        <td>
-                            <?php echo e(
-                                $course["enrolled_at"]
-                            ); ?>
-                        </td>
-
-                        
-<td>
-    <a
-        href="course.php?course_id=<?php echo (int)$course['id']; ?>"
-        class="btn btn-primary"
-    >
-        Vào học
-    </a>
-</td>
-
-
-                    </tr>
-
-                <?php endforeach; ?>
-
-                <?php if (empty($courses)): ?>
-                    <tr>
-                        <td colspan="6">
-                            Bạn chưa có khóa học nào.
-                            Hãy đăng ký khóa học để bắt đầu học.
-                        </td>
-                    </tr>
-                <?php endif; ?>
-
-            </tbody>
-        </table>
-
-    </div>
+    <div class="edu-course-grid" id="course-list">
+<?php foreach ($courses as $course): ?>
+    <article class="edu-course-card">
+        <div class="edu-course-cover"><?= eduIcon('book') ?><span>EDUSPACE / LEARNING</span></div>
+        <div class="edu-course-body">
+            <div class="edu-course-meta"><span class="edu-course-category"><?= e($course['category']) ?></span><?= eduBadge('enrolled') ?></div>
+            <h2><?= e($course['title']) ?></h2>
+            <p class="edu-course-description"><?= e($course['description'] ?? '') ?></p>
+            <p class="edu-course-teacher"><?= eduIcon('users') ?><?= e($course['teacher_name'] ?? 'Chưa xác định') ?></p>
+            <div class="edu-course-actions"><a class="btn btn-primary" href="course.php?course_id=<?= (int)$course['id'] ?>">Vào lớp học <?= eduIcon('arrow') ?></a><a href="progress.php?course_id=<?= (int)$course['id'] ?>">Xem tiến độ</a><small>Ngày tham gia: <?= e($course['enrolled_at']) ?></small></div>
+        </div>
+    </article>
+<?php endforeach; ?>
+<?php if (empty($courses)): ?>
+    <div class="edu-empty"><?= eduIcon('book') ?><h2>Bạn chưa có lớp học nào</h2><p>Khám phá các lớp học và chọn nội dung bạn muốn học.</p><a class="btn btn-primary" href="courses.php">Khám phá lớp học</a></div>
+<?php endif; ?>
+</div>
 
     <p style="margin-top: 25px;">
         <a href="courses.php">
-            Xem thêm khóa học
+            Xem thêm lớp học
         </a>
     </p>
 
     <p style="margin-top: 15px;">
         <a href="../dashboards/student.php">
-            ← Quay lại Dashboard học viên
+            ← Quay lại Dashboard học sinh
         </a>
     </p>
 
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

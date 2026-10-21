@@ -23,7 +23,7 @@ if (
     exit("Yêu cầu không hợp lệ.");
 }
 
-// 3. Lấy ID khóa học
+// 3. Lấy ID lớp học
 $courseId = filter_input(
     INPUT_POST,
     "course_id",
@@ -32,7 +32,7 @@ $courseId = filter_input(
 
 if (!$courseId || $courseId < 1) {
     http_response_code(400);
-    exit("ID khóa học không hợp lệ.");
+    exit("ID lớp học không hợp lệ.");
 }
 
 $teacherId = (int)$_SESSION["user_id"];
@@ -41,7 +41,7 @@ try {
     // 4. Bắt đầu transaction
     $pdo->beginTransaction();
 
-    // 5. Kiểm tra quyền và khóa bản ghi khóa học
+    // 5. Kiểm tra quyền và khóa bản ghi lớp học
     $stmt = $pdo->prepare(
         "SELECT id, status
          FROM courses
@@ -57,7 +57,7 @@ try {
         $pdo->rollBack();
 
         http_response_code(404);
-        exit("Không tìm thấy khóa học của bạn.");
+        exit("Không tìm thấy lớp học của bạn.");
     }
 
     // Chỉ được xóa bản nháp
@@ -66,11 +66,11 @@ try {
 
         http_response_code(409);
         exit(
-            "Chỉ được xóa khóa học ở trạng thái bản nháp."
+            "Chỉ được xóa lớp học ở trạng thái bản nháp."
         );
     }
 
-    // 6. Kiểm tra khóa học còn bài học không
+    // 6. Kiểm tra lớp học còn bài học không
     $countStmt = $pdo->prepare(
         "SELECT COUNT(*)
          FROM lessons
@@ -85,13 +85,13 @@ try {
 
         http_response_code(409);
         exit(
-            "Không thể xóa khóa học vì vẫn còn " .
+            "Không thể xóa lớp học vì vẫn còn " .
             $lessonCount . " bài học. " .
             "Hãy xóa tài liệu và các bài học trước."
         );
     }
 
-    // 7. Khóa học không còn bài học -> được xóa
+    // 7. Lớp học không còn bài học -> được xóa
     $delete = $pdo->prepare(
         "DELETE FROM courses
          WHERE id = ?
@@ -103,7 +103,7 @@ try {
 
     if ($delete->rowCount() !== 1) {
         throw new RuntimeException(
-            "Không thể xóa khóa học."
+            "Không thể xóa lớp học."
         );
     }
 
@@ -122,5 +122,5 @@ try {
     error_log($e->getMessage());
 
     http_response_code(500);
-    exit("Có lỗi khi xóa khóa học. Vui lòng thử lại.");
+    exit("Có lỗi khi xóa lớp học. Vui lòng thử lại.");
 }

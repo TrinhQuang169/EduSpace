@@ -19,8 +19,8 @@ $keyword = trim((string)($_GET["search"] ?? ""));
 $role = $_GET["role"] ?? "";
 
 $roles = [
-    "student" => "Học viên",
-    "teacher" => "Giảng viên",
+    "student" => "Học sinh",
+    "teacher" => "Giáo viên",
     "admin" => "Quản trị viên"
 ];
 
@@ -80,45 +80,35 @@ foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
 $totalUsers = array_sum($counts);
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-    <title>Quản lý tài khoản - EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Quản lý tài khoản', 'users'); ?>
 
-<div class="container" style="padding:40px 0">
+
 
     <h1>Quản lý tài khoản EduSpace</h1>
 
-    <p>
-        Tổng: <?= $totalUsers ?> |
-        Học viên: <?= $counts["student"] ?> |
-        Giảng viên: <?= $counts["teacher"] ?> |
-        Admin: <?= $counts["admin"] ?>
-    </p>
+<p>Gặp gỡ cộng đồng EduSpace. Tra cứu và quản lý quyền truy cập tài khoản.</p>
+<div class="edu-stats">
+<?php eduStat($totalUsers, 'Tổng tài khoản', 'users');
+eduStat($counts['student'], 'Học sinh', 'book', 'purple');
+eduStat($counts['teacher'], 'Giáo viên', 'award', 'green');
+eduStat($counts['admin'], 'Quản trị viên', 'check', 'orange'); ?>
+</div>
 
     <?php if (
         ($_GET["message"] ?? "") === "updated"
     ): ?>
-        <p>Đã cập nhật trạng thái tài khoản.</p>
+        <div class="alert alert-success" role="status">Đã cập nhật trạng thái tài khoản.</div>
     <?php endif; ?>
 
-    <form method="GET">
+    <form method="GET" class="edu-filter" aria-label="Tìm kiếm tài khoản">
         <input
             type="text"
-            name="search"
+            name="search" aria-label="Tìm tên, email hoặc ID"
             placeholder="Tìm tên, email hoặc ID"
             value="<?= e($keyword) ?>"
         >
 
-        <select name="role">
+        <select name="role" aria-label="Lọc theo vai trò">
             <option value="">Tất cả vai trò</option>
 
             <?php foreach ($roles as $key => $label): ?>
@@ -140,8 +130,7 @@ $totalUsers = array_sum($counts);
 
     <h2 style="margin-top:25px">Danh sách tài khoản</h2>
 
-    <div style="overflow-x:auto">
-        <table class="data-table">
+    <div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -171,9 +160,7 @@ $totalUsers = array_sum($counts);
                         </td>
 
                         <td>
-                            <?= $user["status"] === "active"
-                                ? "Hoạt động"
-                                : "Bị khóa / Không hoạt động" ?>
+                            <?= eduBadge($user["status"]) ?>
                         </td>
 
                         <td>
@@ -228,8 +215,7 @@ $totalUsers = array_sum($counts);
                     </tr>
                 <?php endif; ?>
             </tbody>
-        </table>
-    </div>
+        </table></div>
 
     <p style="margin-top:25px">
         <a href="../dashboards/admin.php">
@@ -237,6 +223,4 @@ $totalUsers = array_sum($counts);
         </a>
     </p>
 
-</div>
-</body>
-</html>
+<?php eduEnd(); ?>

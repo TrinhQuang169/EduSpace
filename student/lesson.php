@@ -2,7 +2,7 @@
 <?php
 require_once __DIR__ . "/../includes/auth.php";
 
-// Chỉ học viên được truy cập
+// Chỉ học sinh được truy cập
 requireRole("student");
 
 // 1. Nhận ID bài học từ URL
@@ -17,11 +17,11 @@ if (!$lessonId || $lessonId < 1) {
     exit("ID bài học không hợp lệ.");
 }
 
-// 2. Lấy ID học viên đang đăng nhập
+// 2. Lấy ID học sinh đang đăng nhập
 $studentId = (int)$_SESSION["user_id"];
 
-// 3. Kiểm tra học viên có quyền xem bài học
-// Phải đăng ký khóa học và khóa học được duyệt
+// 3. Kiểm tra học sinh có quyền xem bài học
+// Phải tham gia lớp học và lớp học được duyệt
 $stmt = $pdo->prepare(
     "SELECT
         l.id,
@@ -48,7 +48,7 @@ $lesson = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$lesson) {
     http_response_code(403);
     exit(
-        "Bạn chưa đăng ký khóa học này hoặc không có quyền xem bài học."
+        "Bạn chưa tham gia lớp học này hoặc không có quyền xem bài học."
     );
 }
 
@@ -109,29 +109,9 @@ $stmt = $pdo->prepare(
 $stmt->execute([$lessonId]);
 $hasQuiz = (bool)$stmt->fetchColumn();
 ?>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Không gian học tập', 'my-courses'); ?>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
 
-    <title>
-        <?php echo e($lesson["lesson_title"]); ?> - EduSpace
-    </title>
-
-    <link
-        rel="stylesheet"
-        href="../assets/css/style.css"
-    >
-</head>
-
-<body>
-
-<div class="container" style="padding: 40px 0;">
 
     <p>
         <a href="course.php?course_id=<?php echo $courseId; ?>">
@@ -145,7 +125,7 @@ $hasQuiz = (bool)$stmt->fetchColumn();
     </h1>
 
     <p>
-        <strong>Khóa học:</strong>
+        <strong>Lớp học:</strong>
         <?php echo e($lesson["course_title"]); ?>
     </p>
 
@@ -157,13 +137,13 @@ $hasQuiz = (bool)$stmt->fetchColumn();
         trim((string)($lesson["content"] ?? "")) !== ""
     ): ?>
 
-        <div style="white-space: pre-wrap;">
+        <div class="edu-reading">
             <?php echo e($lesson["content"]); ?>
         </div>
 
     <?php else: ?>
 
-        <p>Giảng viên không cung cấp nội dung văn bản.</p>
+        <p>Giáo viên không cung cấp nội dung văn bản.</p>
 
     <?php endif; ?>
 
@@ -199,9 +179,7 @@ $hasQuiz = (bool)$stmt->fetchColumn();
 
     <?php else: ?>
 
-        <div style="overflow-x: auto;">
-
-            <table class="data-table">
+        <div class="edu-table-wrap" role="region" aria-label="Bảng dữ liệu" tabindex="0"><table class="data-table">
 
                 <thead>
                     <tr>
@@ -228,9 +206,7 @@ $hasQuiz = (bool)$stmt->fetchColumn();
                             </td>
 
                             <td>
-                                <?php echo e(
-                                    strtoupper($material["file_type"])
-                                ); ?>
+                                <?= eduBadge($material["file_type"]) ?>
                             </td>
 
                             <td>
@@ -268,16 +244,7 @@ $hasQuiz = (bool)$stmt->fetchColumn();
     </a>
 
 
-<?php if ($hasQuiz): ?>
-    <p style="margin-top:25px">
-        <a
-            href="quiz.php?lesson_id=<?php echo $lessonId; ?>"
-            class="btn btn-primary"
-        >
-            Làm bài trắc nghiệm
-        </a>
-    </p>
-<?php endif; ?>
+
 
 
 </td>
@@ -288,19 +255,24 @@ $hasQuiz = (bool)$stmt->fetchColumn();
                     <?php endforeach; ?>
 
                 </tbody>
-            </table>
-
-        </div>
+            </table></div>
 
     <?php endif; ?>
 
-    <p style="margin-top: 30px;">
+    <?php if ($hasQuiz): ?>
+    <p style="margin-top:25px">
+        <a
+            href="quiz.php?lesson_id=<?php echo $lessonId; ?>"
+            class="btn btn-primary"
+        >
+            Làm bài trắc nghiệm
+        </a>
+    </p>
+<?php endif; ?>
+<p style="margin-top: 30px;">
         <a href="course.php?course_id=<?php echo $courseId; ?>">
-            ← Quay lại khóa học
+            ← Quay lại lớp học
         </a>
     </p>
 
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>

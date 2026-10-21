@@ -2,6 +2,8 @@
 <?php
 require_once __DIR__ . "/../includes/auth.php";
 requireRole("teacher");
+require_once __DIR__ . '/../includes/classes.php';
+$classesReady = eduPrepareClasses($pdo);
 
 $error = "";
 $success = "";
@@ -33,6 +35,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit("Yêu cầu không hợp lệ.");
     }
 
+    if (!$classesReady) { http_response_code(503); exit(eduClassMigrationMessage()); }
+
     $title = trim($_POST["title"] ?? "");
     $description = trim($_POST["description"] ?? "");
     $category = trim($_POST["category"] ?? "");
@@ -40,10 +44,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $color = $_POST["color"] ?? "blue";
 
     if ($title === "" || $category === "") {
-        $error = "Vui lòng nhập tên và danh mục khóa học.";
+        $error = "Vui lòng nhập tên và danh mục lớp học.";
 
     } elseif (mb_strlen($title) > 255) {
-        $error = "Tên khóa học quá dài.";
+        $error = "Tên lớp học quá dài.";
 
     } elseif (mb_strlen($category) > 100) {
         $error = "Tên danh mục quá dài.";
@@ -52,38 +56,44 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error = "Mô tả không được vượt quá 5000 ký tự.";
 
     } elseif (!in_array($color, $allowedColors, true)) {
-        $error = "Màu khóa học không hợp lệ.";
+        $error = "Màu lớp học không hợp lệ.";
 
     } else {
-        // Lấy ID giảng viên từ Session
+        // Lấy ID giáo viên từ Session
         $teacherId = (int)$_SESSION["user_id"];
         $teacherName = $_SESSION["user_name"];
 
         $sql = "INSERT INTO courses
                 (teacher_id, title, description,
                  category, icon, color,
-                 teacher_name, students, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'draft')";
+                 teacher_name, students, status, class_code)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0, 'draft', ?)";
 
         $stmt = $pdo->prepare($sql);
 
-        $stmt->execute([
-            $teacherId,
-            $title,
-            $description,
-            $category,
-            $icon,
-            $color,
-            $teacherName
-        ]);
+        try {
+            for ($codeRetry = 0; $codeRetry < 5; $codeRetry++) {
+                $classCode = eduGenerateClassCode();
+                try {
+                    $stmt->execute([$teacherId, $title, $description, $category, $icon, $color, $teacherName, $classCode]);
+                    break;
+                } catch (PDOException $exception) {
+                    if ((int)($exception->errorInfo[1] ?? 0) !== 1062 || $codeRetry === 4) throw $exception;
+                }
+            }
+        } catch (Throwable $exception) {
+            error_log('Class creation failed: ' . $exception->getMessage());
+            $error = 'Không thể tạo lớp học. Vui lòng thử lại.';
+        }
+        if ($error === '') {
+            $success = "Tạo lớp học thành công!";
 
-        $success = "Tạo khóa học thành công!";
-
-        $title = "";
-        $description = "";
-        $category = "";
-        $icon = "📚";
-        $color = "blue";
+            $title = "";
+            $description = "";
+            $category = "";
+            $icon = "📚";
+            $color = "blue";
+        }
     }
 }
 
@@ -96,29 +106,17 @@ function e($value) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>Tạo khóa học - EduSpace</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body class="auth-page">
+<?php require_once __DIR__ . "/../includes/ui.php"; eduStart('Tạo lớp học mới', 'create'); ?>
 
-<div class="auth-container">
-    <div class="auth-card">
 
-        <a href="../dashboards/teacher.php"
-           class="auth-logo">
-            🎓 EduSpace
-        </a>
+    <div class="edu-form-card">
 
-        <h1>Tạo khóa học mới</h1>
+
+
+        <h1>Tạo lớp học mới</h1><?php if (!$classesReady): ?><div class="alert alert-error"><?= e(eduClassMigrationMessage()) ?></div><?php endif; ?>
 
         <p class="auth-subtitle">
-            Thêm khóa học vào hệ thống
+            Thêm lớp học vào hệ thống. Mã tham gia riêng sẽ được tạo tự động.
         </p>
 
         <?php if ($error !== ""): ?>
@@ -129,7 +127,7 @@ function e($value) {
 
         <?php if ($success !== ""): ?>
             <div class="alert alert-success">
-                <?php echo e($success); ?>
+                <?php echo e($success); ?><p>Mã tham gia: <code class="edu-class-code"><?= e($classCode) ?></code></p><a href="courses.php">Đến danh sách lớp học →</a>
             </div>
         <?php endif; ?>
 
@@ -142,8 +140,8 @@ function e($value) {
                    ); ?>">
 
             <div class="form-group">
-                <label>Tên khóa học</label>
-                <input type="text"
+                <label for="field-title">Tên lớp học</label>
+<input id="field-title" type="text"
                        name="title"
                        maxlength="255"
                        value="<?php echo e($title); ?>"
@@ -152,18 +150,18 @@ function e($value) {
             </div>
 
             <div class="form-group">
-                <label>Mô tả khóa học</label>
-                <textarea name="description"
+                <label for="field-description">Mô tả lớp học</label>
+<textarea id="field-description" name="description"
                           rows="5"
                           maxlength="5000"
-                          placeholder="Giới thiệu khóa học..."><?php
+                          placeholder="Giới thiệu lớp học..."><?php
                     echo e($description);
                 ?></textarea>
             </div>
 
             <div class="form-group">
-                <label>Danh mục</label>
-                <input type="text"
+                <label for="field-category">Danh mục</label>
+<input id="field-category" type="text"
                        name="category"
                        maxlength="100"
                        value="<?php echo e($category); ?>"
@@ -172,8 +170,8 @@ function e($value) {
             </div>
 
             <div class="form-group">
-                <label>Biểu tượng</label>
-                <select name="icon">
+                <label for="field-icon">Biểu tượng</label>
+<select id="field-icon" name="icon">
                     <option value="📚">📚 Sách</option>
                     <option value="💻">💻 Máy tính</option>
                     <option value="🎨">🎨 Thiết kế</option>
@@ -184,8 +182,8 @@ function e($value) {
             </div>
 
             <div class="form-group">
-                <label>Màu hiển thị</label>
-                <select name="color">
+                <label for="field-color">Màu hiển thị</label>
+<select id="field-color" name="color">
                     <option value="blue">Xanh dương</option>
                     <option value="purple">Tím</option>
                     <option value="yellow">Vàng</option>
@@ -196,20 +194,17 @@ function e($value) {
             </div>
 
             <button type="submit"
-                    class="btn btn-primary auth-submit">
-                Tạo khóa học
+                    class="btn btn-primary auth-submit" <?= !$classesReady ? "disabled" : "" ?>>
+                Tạo lớp học
             </button>
 
         </form>
 
         <p class="auth-back">
             <a href="courses.php">
-                ← Danh sách khóa học của tôi
+                ← Danh sách lớp học của tôi
             </a>
         </p>
 
     </div>
-</div>
-
-</body>
-</html>
+<?php eduEnd(); ?>
